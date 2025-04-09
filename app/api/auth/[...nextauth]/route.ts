@@ -1,6 +1,6 @@
 import NextAuth, { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcrypt"
+import { compare } from "bcryptjs"
 import prisma from "@/lib/db"
 import type { JWT } from "next-auth/jwt"
 import type { Session, User } from "next-auth"

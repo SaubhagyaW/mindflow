@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
-import { hash, compare } from "bcrypt"
+import { hash, compare } from "bcryptjs"
 import { z } from "zod"
 
 export const dynamic = "force-dynamic" // Ensure this route is not cached

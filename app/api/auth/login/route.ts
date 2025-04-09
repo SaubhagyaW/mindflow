@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { compare } from "bcrypt"
+import { compare } from "bcryptjs"
 import prisma from "@/lib/db"
 
 export const dynamic = "force-dynamic" // Ensure this route is not cached
