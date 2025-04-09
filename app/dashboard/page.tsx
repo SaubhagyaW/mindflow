@@ -1,0 +1,362 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AudioRecorder } from "@/components/audio-recorder"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { DashboardShell } from "@/components/dashboard-shell"
+import { ConfirmationDialog } from "@/components/confirmation-dialog"
+import { MessageSquare, ListChecks, Share2, Loader2, Plus, Trash2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { ShareNoteDialog } from "@/components/share-note-dialog"
+
+// Add these type definitions at the top of the file, after the imports
+type Conversation = {
+  id: string
+  title: string
+  transcript: string
+  audioUrl?: string | null
+  createdAt: string
+  updatedAt: string
+  userId: string
+}
+
+type Note = {
+  id: string
+  content: string
+  actionItems?: string | null
+  isShared: boolean
+  createdAt: string
+  updatedAt: string
+  userId: string
+  conversationId: string
+  conversation?: {
+    title: string
+  }
+}
+
+export default function DashboardPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState("conversations")
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
+
+  // Add state for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [conversationToDelete, setConversationToDelete] = useState<string | null>(null)
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/sign-in")
+    }
+  }, [status, router])
+
+  // Fetch conversations and notes when session is available
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchData()
+    }
+  }, [session])
+
+  // Fix the fetchData function to include proper null checks
+  const fetchData = async () => {
+    if (!session?.user?.id) return
+
+    setIsLoading(true)
+    try {
+      // Fetch conversations
+      const conversationsResponse = await fetch(`/api/conversations?userId=${session.user.id}`, {
+        cache: "no-store",
+      })
+
+      if (conversationsResponse.ok) {
+        const conversationsData = await conversationsResponse.json()
+        console.log("Fetched conversations:", conversationsData)
+        setConversations(conversationsData as Conversation[])
+      } else {
+        console.error("Failed to fetch conversations:", await conversationsResponse.json())
+      }
+
+      // Fetch notes
+      const notesResponse = await fetch(`/api/notes?userId=${session.user.id}`, {
+        cache: "no-store",
+      })
+
+      if (notesResponse.ok) {
+        const notesData = await notesResponse.json()
+        console.log("Fetched notes:", notesData)
+        setNotes(notesData as Note[])
+      } else {
+        console.error("Failed to fetch notes:", await notesResponse.json())
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Updated to open the confirmation dialog instead of using browser confirm
+  const handleDeleteClick = (id: string) => {
+    setConversationToDelete(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConversation = async () => {
+    if (!conversationToDelete) return
+
+    try {
+      const response = await fetch(`/api/conversations/${conversationToDelete}`, {
+        method: "DELETE",
+        cache: "no-store",
+      })
+
+      if (response.ok) {
+        // Update the local state to remove the deleted conversation
+        setConversations(conversations.filter((conv) => conv.id !== conversationToDelete))
+
+        // Also remove any notes associated with this conversation
+        setNotes(notes.filter((note) => note.conversationId !== conversationToDelete))
+
+        // Show success message with toast
+        toast({
+          title: "Conversation deleted",
+          description: "The conversation has been successfully removed.",
+        })
+      } else {
+        throw new Error("Failed to delete conversation")
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete the conversation. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setConversationToDelete(null)
+    }
+  }
+
+  let content
+
+  // Show loading state while checking authentication
+  if (status === "loading" || isLoading) {
+    content = (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-lg text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  } else if (status === "authenticated") {
+    content = (
+      <DashboardShell>
+        <DashboardHeader heading="Dashboard" text="Manage your conversations and generated notes." />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="conversations">Conversations</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+            <TabsTrigger value="new">New Conversation</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="conversations" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card className="bg-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-900">Total Conversations</CardTitle>
+                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{conversations.length}</div>
+                  <p className="text-xs text-gray-500">
+                    {conversations.length === 0 ? "Start your first conversation" : "Conversations saved"}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-900">Generated Notes</CardTitle>
+                  <ListChecks className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{notes.length}</div>
+                  <p className="text-xs text-gray-500">
+                    {notes.length === 0 ? "Notes are generated from conversations" : "Notes generated"}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-900">Shared Notes</CardTitle>
+                  <Share2 className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{notes.filter((note) => note.isShared).length}</div>
+                  <p className="text-xs text-gray-500">
+                    {notes.filter((note) => note.isShared).length === 0
+                      ? "No notes shared yet"
+                      : "Notes shared with others"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {conversations.length > 0 ? (
+              <div className="space-y-4">
+                {conversations.map((conversation) => (
+                  <Card key={conversation.id} className="bg-white hover:shadow-md transition-shadow">
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">{conversation.title}</h3>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-500 hover:text-blue-600"
+                            onClick={() => router.push(`/dashboard/conversations/${conversation.id}`)}
+                            title="View Conversation"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-500 hover:text-red-600"
+                            onClick={() => handleDeleteClick(conversation.id)}
+                            title="Delete Conversation"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-4">
+                        {new Date(conversation.createdAt).toLocaleDateString()}
+                      </p>
+                      <p className="text-gray-700 line-clamp-3">{conversation.transcript.substring(0, 200)}...</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-lg border border-gray-100 shadow-sm">
+                <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+                <p className="text-gray-500 mb-6">Start a new conversation to see it here.</p>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setActiveTab("new")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Start Conversation
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="notes" className="space-y-4">
+            {notes.length > 0 ? (
+              <div className="space-y-4">
+                {notes.map((note) => (
+                  <Card key={note.id} className="bg-white hover:shadow-md transition-shadow">
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {note.conversation?.title || "Untitled Note"}
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:text-blue-600"
+                          onClick={() => router.push(`/dashboard/conversations/${note.conversationId}`)}
+                        >
+                          <ListChecks className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-4">{new Date(note.createdAt).toLocaleDateString()}</p>
+
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">Summary of Main Ideas:</h4>
+                          <div className="bg-blue-50 p-4 rounded-md text-gray-700">
+                            <p className="line-clamp-3">{note.content}</p>
+                          </div>
+                        </div>
+
+                        {note.actionItems && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Action Items:</h4>
+                            <div className="bg-green-50 p-4 rounded-md text-gray-700">
+                              <p className="line-clamp-3">{note.actionItems}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {session?.user?.id && note.id && (
+                        <div className="mt-4 flex justify-end">
+                          <ShareNoteDialog
+                            noteId={note.id}
+                            noteTitle={note.conversation?.title || "Untitled Note"}
+                            onShareSuccess={fetchData}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-lg border border-gray-100 shadow-sm">
+                <ListChecks className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
+                <p className="text-gray-500 mb-6">Notes are automatically generated from your conversations.</p>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setActiveTab("new")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Start Conversation
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="new">
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Start a New Conversation</CardTitle>
+                <CardDescription className="text-gray-500">
+                  Speak with your AI brainstorming partner to capture and develop your ideas.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AudioRecorder onSave={fetchData} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Confirmation Dialog */}
+        <ConfirmationDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          onConfirm={handleDeleteConversation}
+          title="Delete Conversation"
+          description="Are you sure you want to delete this conversation? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+        />
+      </DashboardShell>
+    )
+  } else {
+    content = null
+  }
+
+  return <>{content}</>
+}

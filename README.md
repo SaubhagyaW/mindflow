@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MindFlow - Next.js 15 Application
+
+## Project Overview
+A modern web application built with Next.js 15 featuring:
+
+- Authentication via NextAuth.js  
+- PostgreSQL database with Prisma ORM  
+- OpenAI API integration  
+- Email functionality using Mailtrap (for development)
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (v18 or later recommended)  
+- PostgreSQL database  
+- Git (for version control)
+
+---
+
+## Installation
+
+
+
+### Install dependencies:
+
+```bash
+npm install
+```
+
+### Set up environment variables:
+
+Create a `.env` file in the root directory with the following structure:
+
+```env
+# Database
+DATABASE_URL="postgresql://<username>:<password>@<host>:<port>/<database_name>"
+
+# NextAuth
+NEXTAUTH_SECRET="your-secure-random-secret"
+NEXTAUTH_URL="http://localhost:3000"
+
+# OpenAI
+OPENAI_API_KEY="your-openai-api-key"
+
+# Mailtrap Configuration
+SMTP_HOST=sandbox.smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_USER=your-mailtrap-user
+SMTP_PASSWORD=your-mailtrap-password
+EMAIL_FROM=noreply@yourdomain.com
+ADMIN_EMAIL=admin@yourdomain.com
+```
+
+---
+
+## Database Setup
+
+### Initialize Prisma:
+
+```bash
+npx prisma init
+```
+
+### Apply database schema:
+
+```bash
+npx prisma db push
+```
+
+### Generate Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+### (Optional) Seed database:
+
+```bash
+npx prisma db seed
+```
+
+---
+
+## Running the Application
+
+### Development Mode
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Runs the app at: [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Authentication
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Configured using **NextAuth.js**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ensure you have:
 
-## Deploy on Vercel
+- A valid `NEXTAUTH_SECRET`  
+  *(can be generated using `openssl rand -base64 32`)*  
+- Proper `NEXTAUTH_URL` set in your environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Email Setup
+
+For development, we use **Mailtrap**.
+
+For production:
+
+- Replace Mailtrap credentials with a production SMTP service  
+- Update the `EMAIL_FROM` address to match your domain
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 15  
+- **Database**: PostgreSQL with Prisma ORM  
+- **Authentication**: NextAuth.js  
+- **AI Integration**: OpenAI API  
+- **Email**: Nodemailer with Mailtrap (dev)
+
+---
+
+## Important Notes
+
+- ❗ Never commit your `.env` file to version control  
+- 🔒 Replace all placeholder values with actual credentials  
+- 🚀 For production deployment:
+  - Use proper secrets management  
+  - Replace Mailtrap with a production email service  
+  - Ensure all security best practices are followed
