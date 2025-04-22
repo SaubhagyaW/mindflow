@@ -15,7 +15,7 @@ export function getEmailTransporter() {
 export async function sendVerificationEmail(email: string, token: string) {
   const transporter = getEmailTransporter()
 
-  const verificationUrl = `${process.env.NEXTAUTH_URL}verify-email?token=${token}`
+  const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`
   const currentYear = new Date().getFullYear()
 
   const mailOptions = {

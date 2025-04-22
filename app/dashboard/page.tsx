@@ -6,19 +6,26 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AudioRecorder } from "@/components/audio-recorder"
+import { VoiceConversation } from "@/components/voice-conversation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { DashboardShell } from "@/components/dashboard-shell"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { MessageSquare, ListChecks, Share2, Loader2, Plus, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ShareNoteDialog } from "@/components/share-note-dialog"
+import { EmailVerificationBanner } from "@/components/email-verification-banner"
 
-// Add these type definitions at the top of the file, after the imports
+// Define Message type
+type Message = {
+  role: string;
+  content: string;
+}
+
+// Updated Conversation type with messages field instead of transcript
 type Conversation = {
   id: string
   title: string
-  transcript: string
+  messages: string | Message[] // Can be either string or array of Message objects
   audioUrl?: string | null
   createdAt: string
   updatedAt: string
@@ -63,6 +70,17 @@ export default function DashboardPage() {
   useEffect(() => {
     if (session?.user?.id) {
       fetchData()
+    }
+  }, [session])
+
+  // Log session data to debug verification status
+  useEffect(() => {
+    if (session?.user) {
+      console.log("Session user data:", {
+        id: session.user.id,
+        email: session.user.email,
+        isVerified: session.user.isVerified,
+      })
     }
   }, [session])
 
@@ -146,6 +164,38 @@ export default function DashboardPage() {
     }
   }
 
+  const getConversationPreview = (conversation: Conversation): string => {
+    if (typeof conversation.messages === 'string') {
+      return conversation.messages.substring(0, 200);
+    } else if (Array.isArray(conversation.messages) && conversation.messages.length > 0) {
+      // Filter out system messages
+      const filteredMessages = conversation.messages.filter(
+        (message) => message.role !== 'system'
+      );
+  
+      // Take first 2-3 messages for the preview
+      const previewMessages = filteredMessages.slice(0, 3);
+      
+      // Format each message with proper attribution
+      const formattedPreview = previewMessages.map(message => {
+        const speaker = message.role === 'user' ? 'You' : 'AI';
+        // Truncate individual messages if too long
+        const content = message.content.length > 70 
+          ? `${message.content.substring(0, 70)}...` 
+          : message.content;
+          
+        return `${speaker}: ${content}`;
+      }).join('\n');
+      
+      // Ensure the overall preview isn't too long
+      return formattedPreview.length > 200 
+        ? `${formattedPreview.substring(0, 197)}...` 
+        : formattedPreview;
+    }
+    return "No content available";
+  }
+  
+
   let content
 
   // Show loading state while checking authentication
@@ -162,6 +212,13 @@ export default function DashboardPage() {
     content = (
       <DashboardShell>
         <DashboardHeader heading="Dashboard" text="Manage your conversations and generated notes." />
+
+        {/* Make the verification banner more prominent */}
+        {session.user && !session.user.isVerified && (
+          <div className="mb-6">
+            <EmailVerificationBanner />
+          </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
@@ -243,7 +300,16 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-500 mb-4">
                         {new Date(conversation.createdAt).toLocaleDateString()}
                       </p>
-                      <p className="text-gray-700 line-clamp-3">{conversation.transcript.substring(0, 200)}...</p>
+                      <div className="text-gray-700 space-y-1.5 whitespace-pre-line">
+                        {getConversationPreview(conversation).split('\n').map((line, index) => (
+                          <div key={index} className={`text-sm ${
+                            line.startsWith('You:') ? 'text-blue-600 font-medium' : 
+                            line.startsWith('AI:') ? 'text-purple-600 font-medium' : ''
+                          }`}>
+                            {line}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </Card>
                 ))}
@@ -329,13 +395,13 @@ export default function DashboardPage() {
           <TabsContent value="new">
             <Card className="bg-white">
               <CardHeader>
-                <CardTitle className="text-gray-900">Start a New Conversation</CardTitle>
+                <CardTitle className="text-gray-900">Start a Voice Conversation</CardTitle>
                 <CardDescription className="text-gray-500">
-                  Speak with your AI brainstorming partner to capture and develop your ideas.
+                  Have a natural voice conversation with your AI brainstorming partner to develop your ideas.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <AudioRecorder onSave={fetchData} />
+                <VoiceConversation onSave={fetchData} />
               </CardContent>
             </Card>
           </TabsContent>

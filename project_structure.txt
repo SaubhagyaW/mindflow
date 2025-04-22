@@ -1,0 +1,127 @@
+.dockerignore: Specifies intentionally untracked files that Docker should ignore.
+.gitignore: Specifies intentionally untracked files that Git should ignore.
+components.json: Configuration file for UI component library.
+docker-compose.yml: Defines services, networks, and volumes for setting up a multi-container Docker application.
+Dockerfile: A text document that contains all the commands a user could call on the command line to assemble an image.
+middleware.ts: Middleware functions that run before a request is handled.
+next.config.mjs: Configuration file for Next.js application.
+package-lock.json: Records the exact versions of dependencies used in the project.
+package.json: Contains metadata about the project, including dependencies and scripts.
+pnpm-lock.yaml: Records the exact versions of dependencies used in the project when using pnpm.
+postcss.config.mjs: Configuration file for PostCSS, a tool for transforming CSS with JavaScript.
+README.md: Provides an overview of the project, including instructions for setup and usage.
+tailwind.config.ts: Configuration file for Tailwind CSS, a utility-first CSS framework.
+tsconfig.json: Configuration file for TypeScript, a superset of JavaScript.
+
+actions/: Contains server actions for handling data mutations.
+actions/user/: Contains actions related to user management.
+actions/user/update.ts: Server action for updating user information.
+
+app/: Contains the routes, components, and logic for the Next.js application.
+app/globals.css: Global CSS file for styling the entire application.
+app/layout.tsx: Defines the layout for the entire application.
+app/page.tsx: Defines the home page of the application.
+app/about/: Contains the about page.
+app/about/page.tsx: Defines the about page content.
+app/api/: Contains API routes for the application.
+app/api/auth/: Contains API routes related to authentication.
+app/api/auth/[...nextauth]/: Dynamic route for NextAuth.js.
+app/api/auth/error/: Contains error pages related to authentication.
+app/api/auth/error/layout.tsx: Defines the layout for authentication error pages.
+app/api/auth/error/page.tsx: Defines the content for authentication error pages.
+app/api/auth/login/: Contains API routes for user login.
+app/api/auth/login/route.ts: Defines the login API route.
+app/api/auth/register/: Contains API routes for user registration.
+app/api/auth/register/route.ts: Defines the registration API route.
+app/api/auth/verify-email/: Contains API routes for email verification.
+app/api/auth/verify-email/route.ts: Defines the email verification API route.
+app/api/conversations/: Contains API routes for managing conversations.
+app/api/conversations/route.ts: Defines the conversations API route.
+app/api/conversations/[id]/: Dynamic route for specific conversations.
+app/api/conversations/[id]/route.ts: Defines the API route for a specific conversation.
+app/api/conversations/save/: Contains API routes for saving conversations.
+app/api/conversations/save/route.ts: Defines the save conversation API route.
+app/api/health/: Contains API routes for checking the health of the application.
+app/api/health/route.ts: Defines the health API route.
+app/api/notes/: Contains API routes for managing notes.
+app/api/notes/route.ts: Defines the notes API route.
+app/api/notes/[id]/: Dynamic route for specific notes.
+app/api/notes/[id]/share/: Contains API routes for sharing notes.
+app/api/notes/[id]/share/route.ts: Defines the share note API route.
+app/api/openai/: Contains API routes for OpenAI integration.
+app/api/openai/chat/: Contains API routes for OpenAI chat functionality.
+app/api/openai/chat/route.ts: Defines the OpenAI chat API route.
+app/api/openai/chat-with-audio/: Contains API routes for OpenAI chat with audio functionality.
+app/api/openai/chat-with-audio/route.ts: Defines the OpenAI chat with audio API route.
+app/api/openai/realtime-token/: Contains API routes for OpenAI realtime token functionality.
+app/api/openai/realtime-token/route.ts: Defines the OpenAI realtime token API route.
+app/api/openai/summarize/: Contains API routes for OpenAI summarization functionality.
+app/api/openai/summarize/route.ts: Defines the OpenAI summarize API route.
+app/api/openai/transcribe/: Contains API routes for OpenAI transcription functionality.
+app/api/openai/transcribe/route.ts: Defines the OpenAI transcribe API route.
+app/api/openai/transcribe-chunk/: Contains API routes for OpenAI chunked transcription functionality.
+app/api/openai/transcribe-chunk/route.ts: Defines the OpenAI transcribe chunk API route.
+app/api/user/: Contains API routes for user management.
+app/api/user/accept-terms/: Contains API routes for accepting terms of service.
+app/api/user/accept-terms/route.ts: Defines the accept terms API route.
+app/api/user/profile/: Contains API routes for user profiles.
+app/api/user/profile/route.ts: Defines the user profile API route.
+app/api/user/update-password/: Contains API routes for updating user passwords.
+app/api/user/update-password/route.ts: Defines the update password API route.
+app/api/user/update-profile/: Contains API routes for updating user profiles.
+app/api/user/update-profile/route.ts: Defines the update profile API route.
+app/check-email/: Contains the check email page.
+app/check-email/layout.tsx: Defines the layout for the check email page.
+app/check-email/page.tsx: Defines the content for the check email page.
+app/contact/: Contains the contact page.
+app/contact/page.tsx: Defines the contact page content.
+app/dashboard/: Contains the dashboard page.
+app/dashboard/layout.tsx: Defines the layout for the dashboard page.
+app/dashboard/page.tsx: Defines the content for the dashboard page.
+app/dashboard/conversations/: Contains the conversations page in the dashboard.
+app/dashboard/conversations/[id]/: Dynamic route for specific conversations in the dashboard.
+app/dashboard/conversations/[id]/page.tsx: Defines the content for a specific conversation page in the dashboard.
+app/dashboard/profile/: Contains the profile page in the dashboard.
+app/dashboard/profile/page.tsx: Defines the content for the profile page in the dashboard.
+app/pricing/: Contains the pricing page.
+app/pricing/page.tsx: Defines the content for the pricing page.
+app/pricing/PricingClientPage.tsx: Defines the client-side component for the pricing page.
+app/privacy/: Contains the privacy page.
+app/privacy/page.tsx: Defines the privacy page content.
+app/services/: Contains the services page.
+app/services/page.tsx: Defines the services page content.
+app/sign-in/: Contains the sign-in page.
+app/sign-in/layout.tsx: Defines the layout for the sign-in page.
+app/sign-in/page.tsx: Defines the content for the sign-in page.
+app/sign-in/SignInClientPage.tsx: Defines the client-side component for the sign-in page.
+app/sign-up/: Contains the sign-up page.
+app/sign-up/layout.tsx: Defines the layout for the sign-up page.
+app/sign-up/page.tsx: Defines the content for the sign-up page.
+app/sign-up/SignUpClientPage.tsx: Defines the client-side component for the sign-up page.
+app/terms/: Contains the terms of service page.
+app/terms/loading.tsx: Defines the loading state for the terms of service page.
+app/terms/page.tsx: Defines the content for the terms of service page.
+app/verify-email/: Contains the verify email page.
+app/verify-email/layout.tsx: Defines the layout for the verify email page.
+app/verify-email/loading.tsx: Defines the loading state for the verify email page.
+app/verify-email/page.tsx: Defines the content for the verify email page.
+
+
+hooks/: Contains reusable hooks.
+hooks/use-mobile.tsx: Hook for detecting mobile devices.
+hooks/use-toast.ts: Hook for using toast notifications.
+
+lib/: Contains utility functions and database connection.
+lib/db.ts: Establishes connection to the database.
+lib/email.ts: Contains functions for sending emails.
+lib/password-utils.ts: Contains utility functions for password hashing and salting.
+lib/utils.ts: Contains utility functions for the application.
+
+prisma/: Contains the Prisma schema and migrations.
+prisma/schema.prisma: Defines the database schema using Prisma.
+
+
+
+
+types/: Contains TypeScript type definitions.
+types/next-auth.d.ts: Type definitions for NextAuth.js.

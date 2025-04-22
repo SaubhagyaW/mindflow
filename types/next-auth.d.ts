@@ -10,6 +10,8 @@ declare module "next-auth" {
       id: string
       /** Whether the user has accepted terms */
       hasAcceptedTerms: boolean
+      /** Whether the user's email is verified */
+      isVerified: boolean
       /** The user's subscription */
       subscription?: {
         plan: string
@@ -27,7 +29,7 @@ declare module "next-auth" {
     email?: string | null
     image?: string | null
     hasAcceptedTerms: boolean
-    isVerified?: boolean
+    isVerified: boolean
     subscription?: {
       plan: string
     }
@@ -41,10 +43,11 @@ declare module "next-auth/jwt" {
     id: string
     /** Whether the user has accepted terms */
     hasAcceptedTerms: boolean
+    /** Whether the user's email is verified */
+    isVerified: boolean
     /** The user's subscription */
     subscription?: {
       plan: string
     }
   }
 }
-

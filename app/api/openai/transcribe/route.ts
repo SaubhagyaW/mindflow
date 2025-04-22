@@ -1,66 +1,76 @@
 import { type NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-export const dynamic = "force-dynamic" // Ensure this route is not cached
+export const dynamic = "force-dynamic" // Disable caching for this route
 
-// Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY!,
 })
 
+const SUPPORTED_FORMATS = ["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm", "ogg", "flac"]
+
 export async function POST(req: NextRequest) {
+  console.log("🔄 [TRANSCRIBE] Request received for audio transcription")
+
   try {
     const formData = await req.formData()
     const audioFile = formData.get("audio")
+    console.log("📦 [TRANSCRIBE] FormData parsed")
 
-    if (!audioFile) {
-      console.error("No audio file found in the request")
-      return NextResponse.json(
-        { error: "Audio file is required", details: "No file found in the request" },
-        { status: 400 },
-      )
-    }
-
-    console.log("Received audio file:", typeof audioFile)
-
-    // Ensure we have a valid file
-    if (!(audioFile instanceof Blob)) {
+    if (!audioFile || !(audioFile instanceof Blob)) {
+      console.warn("⚠️ [TRANSCRIBE] Invalid or missing audio file")
       return NextResponse.json(
         {
-          error: "Invalid audio data",
-          details: `Expected Blob but got ${typeof audioFile}`,
+          error: "Audio file is required and must be a Blob/File.",
         },
         { status: 400 },
       )
     }
 
-    // Use OpenAI's Whisper API to transcribe the audio
-    // The SDK can accept a Blob directly
-    const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: "whisper-1",
+    const fileName = audioFile instanceof File ? audioFile.name : "unnamed.webm"
+    const fileType = audioFile.type || "audio/webm"
+    const fileSize = audioFile.size
+
+    console.log("📝 [TRANSCRIBE] Audio file details:", {
+      name: fileName,
+      type: fileType,
+      size: fileSize,
     })
 
-    console.log("Transcription successful")
+    if (fileSize < 1000) {
+      console.warn("⚠️ [TRANSCRIBE] Audio file too small to process")
+      return NextResponse.json({
+        text: "",
+        warning: "Audio file too small to process",
+      })
+    }
+
+    const file = audioFile instanceof File
+      ? audioFile
+      : new File([audioFile], fileName, { type: fileType })
+
+    console.log("📤 [TRANSCRIBE] Sending audio to OpenAI Whisper API...")
+
+    const transcription = await openai.audio.transcriptions.create({
+      file,
+      model: "whisper-1",
+      language: "en",
+    })
+
+    console.log("✅ [TRANSCRIBE] Transcription success:", transcription.text)
 
     return NextResponse.json({
       text: transcription.text,
     })
-  } catch (error) {
-    console.error("Error transcribing audio:", error)
-
-    // Provide more detailed error information
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    const errorStack = error instanceof Error ? error.stack : undefined
+  } catch (error: any) {
+    console.error("❌ [TRANSCRIBE] Whisper API error:", error)
 
     return NextResponse.json(
       {
-        error: "Failed to transcribe audio",
-        details: errorMessage,
-        stack: process.env.NODE_ENV === "development" ? errorStack : undefined,
+        error: "Transcription failed",
+        details: error.message || "Unknown error",
       },
       { status: 500 },
     )
   }
 }
-

@@ -21,6 +21,7 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  productionBrowserSourceMaps: false,
 }
 
 mergeConfig(nextConfig, userConfig)

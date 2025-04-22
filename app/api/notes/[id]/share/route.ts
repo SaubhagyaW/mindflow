@@ -14,6 +14,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Check if user's email is verified
+    if (!session.user.isVerified) {
+      return NextResponse.json({ error: "Email verification required to share notes" }, { status: 403 })
+    }
+
     const { method, recipient } = await req.json()
 
     if (!method || !recipient) {

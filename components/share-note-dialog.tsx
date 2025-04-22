@@ -55,6 +55,17 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
       return
     }
 
+    // Check if user's email is verified
+    if (!session?.user?.isVerified) {
+      toast({
+        title: "Email verification required",
+        description: "Please verify your email address before sharing notes.",
+        variant: "destructive",
+      })
+      setIsOpen(false)
+      return
+    }
+
     setIsSharing(true)
 
     try {

@@ -48,11 +48,6 @@ export const authOptions: NextAuthOptions = {
           subscription?: { plan: string }
         }
 
-        // Check if user is verified
-        if (!typedUser.isVerified) {
-          throw new Error("Please verify your email before signing in")
-        }
-
         // Compare password
         const passwordMatch = await compare(credentials.password, typedUser.password)
 
@@ -60,12 +55,13 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Return user with explicitly typed properties
+        // Return user with explicitly typed properties and include isVerified status
         return {
           id: typedUser.id,
           name: typedUser.name,
           email: typedUser.email,
           hasAcceptedTerms: typedUser.hasAcceptedTerms,
+          isVerified: typedUser.isVerified, // Include isVerified status
           subscription: typedUser.subscription,
         }
       },
@@ -84,6 +80,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email
         token.hasAcceptedTerms = user.hasAcceptedTerms
         token.subscription = user.subscription
+        token.isVerified = user.isVerified // Add isVerified to token
       }
 
       // Handle session updates
@@ -93,6 +90,9 @@ export const authOptions: NextAuthOptions = {
         }
         if (session.subscription !== undefined) {
           token.subscription = session.subscription
+        }
+        if (session.isVerified !== undefined) {
+          token.isVerified = session.isVerified
         }
       }
 
@@ -104,6 +104,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string
         session.user.email = token.email as string
         session.user.hasAcceptedTerms = token.hasAcceptedTerms as boolean
+        session.user.isVerified = token.isVerified as boolean // Add isVerified to session
         session.user.subscription = token.subscription as { plan: string } | undefined
       }
       return session
@@ -121,4 +122,3 @@ export const authOptions: NextAuthOptions = {
 const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
-

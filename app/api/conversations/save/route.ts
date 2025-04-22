@@ -3,7 +3,42 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
 
-export const dynamic = "force-dynamic" // Ensure this route is not cached
+export const dynamic = "force-dynamic"
+
+async function generateSummary(transcript: string) {
+  if (!transcript || transcript.trim().length < 10) {
+    return {
+      summary: "No meaningful conversation transcript was provided to generate a summary.",
+      actionItems: "",
+    }
+  }
+
+  try {
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/openai/summarize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript }),
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to generate summary: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    return {
+      summary: data.summary || "No summary available",
+      actionItems: data.actionItems || "",
+    }
+  } catch (error) {
+    console.error("Summary generation error:", error)
+    return {
+      summary: "Summary generation failed. Please check the conversation transcript.",
+      actionItems: "",
+    }
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,82 +48,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { title, transcript, messages } = await req.json()
+    const body = await req.json()
+    const {
+      title = "Voice Conversation",
+      transcript = "No transcript available",
+      messages = [{ role: "user", content: "Voice conversation" }],
+    } = body
 
-    if (!title || !transcript || !messages) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
-    }
-
-    console.log("Received save request:", {
-      userId: session.user.id,
-      title,
-      transcriptLength: transcript.length,
-      messagesCount: messages.length,
+    const conversation = await prisma.conversation.create({
+      data: {
+        title,
+        transcript,
+        userId: session.user.id,
+        audioUrl: null,
+        messages,
+      },
     })
 
-    // Save the conversation
-    try {
-      console.log("Creating conversation in database with userId:", session.user.id)
+    const summaryData = await generateSummary(transcript)
 
-      const conversation = await prisma.conversation.create({
-        data: {
-          title,
-          transcript,
-          userId: session.user.id,
-          audioUrl: null, // Set to null since we're not storing audio files yet
-        },
-      })
+    const note = await prisma.note.create({
+      data: {
+        content: summaryData.summary,
+        actionItems: summaryData.actionItems,
+        userId: session.user.id,
+        conversationId: conversation.id,
+      },
+    })
 
-      console.log("Conversation saved successfully:", conversation.id)
-
-      // Generate summary and action items using OpenAI
-      const summaryResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/openai/summarize`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transcript }),
-        cache: "no-store", // Next.js 15 explicit no caching
-      })
-
-      if (!summaryResponse.ok) {
-        const errorData = await summaryResponse.json()
-        console.error("Summary generation failed:", errorData)
-        throw new Error("Failed to generate summary")
-      }
-
-      const summaryData = await summaryResponse.json()
-      console.log("Summary generated successfully")
-
-      // Create note with summary and action items
-      const note = await prisma.note.create({
-        data: {
-          content: summaryData.summary,
-          actionItems: summaryData.actionItems,
-          userId: session.user.id,
-          conversationId: conversation.id,
-        },
-      })
-
-      console.log("Note created:", note.id)
-
-      return NextResponse.json(
-        {
-          conversation,
-          note,
-        },
-        { status: 201 },
-      )
-    } catch (dbError) {
-      console.error("Database error:", dbError)
-      return NextResponse.json(
-        {
-          error: "Database operation failed",
-          details: dbError instanceof Error ? dbError.message : String(dbError),
-        },
-        { status: 500 },
-      )
-    }
+    return NextResponse.json({ conversation, note }, { status: 201 })
   } catch (error) {
     console.error("Error saving conversation:", error)
     return NextResponse.json(
@@ -100,4 +88,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-

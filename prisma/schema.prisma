@@ -1,10 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
- 
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -26,15 +23,16 @@ model User {
 }
 
 model Conversation {
-  id        String   @id @default(cuid())
-  title     String
+  id         String   @id @default(cuid())
+  title      String
   transcript String   @db.Text
-  audioUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notes     Note[]
+  messages   Json?    // Stored as JSON for chat history
+  audioUrl   String?  // Optional audio reference
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes      Note[]
 }
 
 model Note {
@@ -59,4 +57,3 @@ model Subscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
-

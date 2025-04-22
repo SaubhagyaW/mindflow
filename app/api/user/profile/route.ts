@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Fetch user profile with subscription
+    // Fetch user profile with subscription and verification status
     const user = await prisma.user.findUnique({
       where: {
         id: session.user.id,
@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         email: true,
+        isVerified: true,
         createdAt: true,
         subscription: {
           select: {
@@ -42,4 +43,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
-

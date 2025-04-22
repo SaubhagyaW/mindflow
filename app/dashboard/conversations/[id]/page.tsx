@@ -1,22 +1,29 @@
 "use client"
 
-import { use, useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { DashboardShell } from "@/components/dashboard-shell"
-import { DashboardHeader } from "@/components/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Loader2, MessageSquare, FileText, Trash2 } from "lucide-react"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { DashboardShell } from "@/components/dashboard-shell"
+import { Loader2, ArrowLeft, Trash2 } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ShareNoteDialog } from "@/components/share-note-dialog"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { useToast } from "@/hooks/use-toast"
+import React from "react" // Import React for use() function
+
+// Define Message type
+type Message = {
+  role: string;
+  content: string;
+}
 
 type Conversation = {
   id: string
   title: string
-  transcript: string
+  messages: string | Message[] // Replace transcript with messages
   audioUrl?: string | null
   createdAt: string
   updatedAt: string
@@ -32,62 +39,86 @@ type Note = {
   updatedAt: string
   userId: string
   conversationId: string
+  conversation?: {
+    title: string
+  }
 }
 
-export default function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+type PageParams = {
+  id: string;
+};
+
+export default function ConversationDetailPage({ params }: { params: PageParams }) {
+  // Properly use React.use() to unwrap the params
+  const unwrappedParams = React.use(params as any) as PageParams;
+  const conversationId = unwrappedParams.id;
 
   const { data: session, status } = useSession()
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [conversation, setConversation] = useState<Conversation | null>(null)
-  const [note, setNote] = useState<Note | null>(null)
-  const [activeTab, setActiveTab] = useState("conversation")
+  const [note, setNote] = useState<Note[]>([])
 
-  // Add state for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
+  // Redirect to sign-in if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/sign-in")
     }
   }, [status, router])
 
+  // Fetch conversation and note data
   useEffect(() => {
-    if (session?.user?.id && id) {
-      fetchConversationData()
+    if (status === "authenticated" && conversationId) {
+      fetchData()
     }
-  }, [session, id])
+  }, [status, conversationId])
 
-  const fetchConversationData = async () => {
+  const fetchData = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/conversations/${id}`, {
+      // Fetch conversation
+      const conversationResponse = await fetch(`/api/conversations/${conversationId}`, {
         cache: "no-store",
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setConversation(data)
-        if (data.notes && data.notes.length > 0) {
-          setNote(data.notes[0])
-        }
+      if (conversationResponse.ok) {
+        const conversationData = await conversationResponse.json()
+        setConversation(conversationData)
       } else {
-        console.error("Failed to fetch conversation:", await response.json())
-        router.push("/dashboard")
+        // Handle error without trying to parse JSON
+        console.error("Failed to fetch conversation:", conversationResponse.status, conversationResponse.statusText)
+      }
+
+      // Fetch note
+      const noteResponse = await fetch(`/api/notes?userId=${session?.user?.id || ""}`, {
+        cache: "no-store",
+      })
+
+      if (noteResponse.ok) {
+        const noteData = await noteResponse.json()
+        console.log("Fetched notes:", noteData)
+        setNote(noteData)
+      } else {
+        // Handle error without trying to parse JSON
+        console.error("Failed to fetch note:", noteResponse.status, noteResponse.statusText)
       }
     } catch (error) {
-      console.error("Error fetching conversation:", error)
-      router.push("/dashboard")
+      console.error("Error fetching data:", error)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true)
+  }
+
   const handleDeleteConversation = async () => {
     try {
-      const response = await fetch(`/api/conversations/${id}`, {
+      const response = await fetch(`/api/conversations/${conversationId}`, {
         method: "DELETE",
         cache: "no-store",
       })
@@ -108,291 +139,185 @@ export default function ConversationPage({ params }: { params: Promise<{ id: str
         description: "Failed to delete the conversation. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setDeleteDialogOpen(false)
     }
   }
 
-  // Function to format the conversation transcript
-  const formatTranscript = (transcript: string) => {
-    // Split the transcript into sections
-    const sections = transcript.split(/(\d+\.\s+\*\*.*?\*\*)/g).filter(Boolean)
+  // Function to render messages based on format
+  const renderMessages = () => {
+    if (!conversation) return null;
 
-    return (
-      <div className="space-y-6">
-        {sections.map((section, index) => {
-          // Check if this is a section header
-          if (section.match(/^\d+\.\s+\*\*.*?\*\*/)) {
-            const title = section.replace(/^\d+\.\s+\*\*|\*\*$/g, "")
-            return (
-              <div key={index} className="mt-8 mb-4">
-                <h3 className="text-xl font-bold text-blue-700">{title}</h3>
+    // If messages is a string, display it directly (for backward compatibility)
+    if (typeof conversation.messages === 'string') {
+      return (
+        <div className="whitespace-pre-wrap">{conversation.messages}</div>
+      );
+    }
+
+    // If messages is an array, format each message based on role
+    if (Array.isArray(conversation.messages)) {
+      return (
+        <div className="space-y-4">
+          {conversation.messages
+          .filter((message) => message.role !== 'system')
+          .map((message, index) => (
+            <div 
+              key={index} 
+              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              {message.role !== 'user' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/images/ai-avatar.png" alt="AI" />
+                  <AvatarFallback>AI</AvatarFallback>
+                </Avatar>
+              )}
+              
+              <div 
+                className={`max-w-[80%] rounded-lg p-4 ${
+                  message.role === 'user' 
+                    ? 'bg-blue-100 text-gray-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
               </div>
-            )
-          } else {
-            // Process the content of each section
-            const lines = section.split("\n").filter(Boolean)
-            return (
-              <div key={index} className="space-y-4">
-                {lines.map((line, lineIndex) => {
-                  // Check if line starts with "You:" or "AI:"
-                  if (line.startsWith("You:") || line.startsWith("AI:")) {
-                    const [speaker, ...content] = line.split(":")
-                    const speakerClass = speaker === "You" ? "text-blue-600" : "text-green-600"
-
-                    return (
-                      <div
-                        key={lineIndex}
-                        className="flex items-start p-3 rounded-lg bg-gray-50 border border-gray-100"
-                      >
-                        <div className={`font-bold ${speakerClass} w-16 flex-shrink-0`}>{speaker}:</div>
-                        <div className="text-gray-700">{content.join(":")}</div>
-                      </div>
-                    )
-                  }
-
-                  // Check if line starts with a dash (bullet point)
-                  if (line.trim().startsWith("- ")) {
-                    return (
-                      <div key={lineIndex} className="flex items-start ml-6">
-                        <span className="text-blue-600 mr-2 font-bold">•</span>
-                        <span className="text-gray-700">{line.trim().substring(2)}</span>
-                      </div>
-                    )
-                  }
-
-                  // Regular paragraph
-                  return (
-                    <p key={lineIndex} className="text-gray-700">
-                      {line}
-                    </p>
-                  )
-                })}
-              </div>
-            )
-          }
-        })}
-      </div>
-    )
-  }
-
-  // Function to format notes content
-  const formatNotes = (content: string) => {
-    if (!content) return <p className="text-gray-500 italic">No content available</p>
-
-    // Split content into sections
-    const sections = content.split(/(\*\*.*?\*\*)/g).filter(Boolean)
-
-    return (
-      <div className="space-y-3">
-        {sections.map((section, index) => {
-          // Check if section is a header (with ** **)
-          if (section.startsWith("**") && section.endsWith("**")) {
-            return (
-              <h4 key={index} className="font-bold text-lg text-blue-700 mt-5 mb-3">
-                {section.replace(/\*\*/g, "")}
-              </h4>
-            )
-          }
-
-          // Process regular content with bullet points
-          const lines = section.split("\n").filter(Boolean)
-          return (
-            <div key={index} className="space-y-2">
-              {lines.map((line, lineIndex) => {
-                // Check if line is a bullet point
-                if (line.trim().startsWith("- ")) {
-                  return (
-                    <div key={lineIndex} className="flex items-start ml-2">
-                      <span className="text-blue-600 mr-2 font-bold">•</span>
-                      <span className="text-gray-700">{line.trim().substring(2)}</span>
-                    </div>
-                  )
-                }
-
-                // Regular line
-                return (
-                  <p key={lineIndex} className="text-gray-700">
-                    {line}
-                  </p>
-                )
-              })}
+              
+              {message.role === 'user' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={session?.user?.image || undefined} alt="User" />
+                  <AvatarFallback>
+                    {session?.user?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              )}
             </div>
-          )
-        })}
-      </div>
-    )
-  }
+          ))}
+        </div>
+      );
+    }
 
-  // Function to format action items
-  const formatActionItems = (actionItems: string) => {
-    if (!actionItems) return null
+    return <p>No conversation content available</p>;
+  };
 
-    const lines = actionItems.split("\n").filter(Boolean)
-
-    return (
-      <div className="space-y-3">
-        {lines.map((line, index) => {
-          // Check if line is a bullet point
-          if (line.trim().startsWith("- ")) {
-            return (
-              <div key={index} className="flex items-start">
-                <span className="text-green-600 mr-2 font-bold">✓</span>
-                <span className="text-gray-700">{line.trim().substring(2)}</span>
-              </div>
-            )
-          }
-
-          // Regular line
-          return (
-            <p key={index} className="text-gray-700">
-              {line}
-            </p>
-          )
-        })}
-      </div>
-    )
-  }
+  let content
 
   if (status === "loading" || isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+    content = (
+      <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           <p className="text-lg text-gray-600">Loading conversation...</p>
         </div>
       </div>
     )
-  }
-
-  if (!conversation) {
-    return (
+  } else if (status === "authenticated") {
+    content = (
       <DashboardShell>
-        <DashboardHeader
-          heading="Conversation Not Found"
-          text="The conversation you're looking for doesn't exist or you don't have permission to view it."
-        >
-          <Button variant="outline" onClick={() => router.push("/dashboard")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            className="gap-1 pl-0 text-gray-500 hover:text-gray-900"
+            onClick={() => router.push("/dashboard")}
+          >
+            <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Button>
-        </DashboardHeader>
-      </DashboardShell>
-    )
-  }
-
-  return (
-    <DashboardShell>
-      <DashboardHeader
-        heading={conversation.title}
-        text={`Created on ${new Date(conversation.createdAt).toLocaleDateString()}`}
-      >
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push("/dashboard")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+          
           <Button
-            variant="outline"
-            className="border-red-600 text-red-600 hover:bg-red-50"
-            onClick={() => setDeleteDialogOpen(true)}
+            variant="ghost"
+            className="text-gray-500 hover:text-red-600 gap-1"
+            onClick={handleDeleteClick}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            <Trash2 className="h-4 w-4" />
+            Delete Conversation
           </Button>
-          {note && (
-            <ShareNoteDialog
-              noteId={note.id}
-              noteTitle={conversation.title}
-              onShareSuccess={() => fetchConversationData()}
-            />
-          )}
         </div>
-      </DashboardHeader>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-white border border-gray-200">
-          <TabsTrigger
-            value="conversation"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
-          >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Conversation
-          </TabsTrigger>
-          <TabsTrigger
-            value="notes"
-            disabled={!note}
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Notes
-          </TabsTrigger>
-        </TabsList>
+        <DashboardHeader
+          heading={conversation?.title || "Conversation"}
+          text={`Created on ${
+            conversation ? new Date(conversation.createdAt).toLocaleDateString() : ""
+          }`}
+        />
 
-        <TabsContent value="conversation" className="space-y-4">
-          <Card className="bg-white shadow-sm border-gray-200">
-            <CardHeader className="bg-gray-50 border-b border-gray-200">
-              <CardTitle className="text-xl font-bold text-gray-900">Conversation Transcript</CardTitle>
+        <div className="grid gap-6">
+          {/* Conversation Transcript */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Conversation</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              {conversation.transcript && formatTranscript(conversation.transcript)}
+            <CardContent>
+              {renderMessages()}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="notes" className="space-y-4">
-          {note ? (
-            <Card className="bg-white shadow-sm border-gray-200">
-              <CardHeader className="bg-gray-50 border-b border-gray-200">
-                <CardTitle className="text-xl font-bold text-gray-900">Generated Notes</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
+          {/* Generated Note */}
+          {note.length > 0 && note
+            .filter((n) => n.conversationId === conversation?.id) // Add this filter to match the conversationId
+            .map((n) => (
+              <Card key={n.id}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-xl">Generated Note</CardTitle>
+                  {session?.user?.id && n.id && (
+                    <ShareNoteDialog
+                      noteId={n.id}
+                      noteTitle={n.conversation?.title || "Untitled Note"}
+                      onShareSuccess={fetchData}
+                    />
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900 mb-3">Summary of Main Ideas:</h3>
-                    <div className="bg-blue-50 p-5 rounded-md border border-blue-100">
-                      {note.content && formatNotes(note.content)}
+                    <h3 className="font-medium text-gray-900 mb-2">Summary of Main Ideas:</h3>
+                    <div className="bg-blue-50 p-4 rounded-md">
+                      <p className="whitespace-pre-wrap text-gray-700">{n.content}</p>
                     </div>
                   </div>
 
-                  {note.actionItems && (
+                  {n.actionItems && (
                     <div>
-                      <h3 className="font-bold text-lg text-gray-900 mb-3">Action Items:</h3>
-                      <div className="bg-green-50 p-5 rounded-md border border-green-100">
-                        {formatActionItems(note.actionItems)}
+                      <h3 className="font-medium text-gray-900 mb-2">Action Items:</h3>
+                      <div className="bg-green-50 p-4 rounded-md">
+                        <p className="whitespace-pre-wrap text-gray-700">{n.actionItems}</p>
                       </div>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            ))}
 
-                  <div className="flex justify-end mt-4">
-                    <ShareNoteDialog
-                      noteId={note.id}
-                      noteTitle={conversation.title}
-                      onShareSuccess={() => fetchConversationData()}
-                    />
-                  </div>
-                </div>
+          {/* Audio player if available */}
+          {conversation?.audioUrl && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Audio Recording</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <audio controls className="w-full">
+                  <source src={conversation.audioUrl} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
               </CardContent>
             </Card>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-lg border border-gray-100 shadow-sm">
-              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No notes available</h3>
-              <p className="text-gray-500">This conversation doesn't have any generated notes.</p>
-            </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
 
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDeleteConversation}
-        title="Delete Conversation"
-        description="Are you sure you want to delete this conversation? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="destructive"
-      />
-    </DashboardShell>
-  )
+        {/* Confirmation Dialog */}
+        <ConfirmationDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          onConfirm={handleDeleteConversation}
+          title="Delete Conversation"
+          description="Are you sure you want to delete this conversation? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+        />
+      </DashboardShell>
+    )
+  } else {
+    content = null
+  }
+
+  return <>{content}</>
 }

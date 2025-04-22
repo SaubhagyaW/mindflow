@@ -43,8 +43,13 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken)
+    // Try to send verification email, but don't fail registration if it fails
+    try {
+      await sendVerificationEmail(email, verificationToken)
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError)
+      // Continue with registration process despite email failure
+    }
 
     // Return user without password
     const { password: _, verificationToken: __, ...userWithoutPassword } = user
@@ -61,4 +66,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
-

@@ -4,11 +4,10 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { AudioRecorder } from "@/components/audio-recorder"
+import { VoiceConversation } from "@/components/voice-conversation"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Brain, Loader2, Plus } from "lucide-react"
-import Image from "next/image"; 
 
 // Add these type definitions at the top of the file, after the imports
 type Conversation = {
@@ -91,9 +90,8 @@ export default function ServicesPage() {
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <Image src="/assets/png ai.png" alt="MindFlow Logo" width={100} height={60} className="h-16 w-auto" />
-            {/* <Brain className="h-8 w-8 text-blue-600" /> */}
-            {/* <span className="text-2xl font-bold text-blue-600">MindFlow</span> */}
+            <Brain className="h-8 w-8 text-blue-600" />
+            <span className="text-2xl font-bold text-blue-600">MindFlow</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {isAuthenticated ? (
@@ -159,7 +157,7 @@ export default function ServicesPage() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900">AI Brainstorming Services</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-900">AI Voice Brainstorming</h1>
 
         {isAuthenticated ? (
           // Content for authenticated users
@@ -172,11 +170,11 @@ export default function ServicesPage() {
                 </TabsList>
                 <TabsContent value="new" className="space-y-6">
                   <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-900">Start a New Conversation</h2>
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900">Start a Voice Conversation</h2>
                     <p className="text-gray-600 mb-6">
-                      Speak with your AI brainstorming partner to capture and develop your ideas.
+                      Have a natural voice conversation with your AI brainstorming partner to develop your ideas.
                     </p>
-                    <AudioRecorder onSave={fetchConversations} />
+                    <VoiceConversation onSave={fetchConversations} />
                   </div>
                 </TabsContent>
                 <TabsContent value="history">
@@ -251,10 +249,10 @@ export default function ServicesPage() {
           // Content for non-authenticated users
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Discover MindFlow</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900">Discover MindFlow Voice</h2>
               <p className="text-gray-600 mb-6">
-                MindFlow helps you capture, organize, and share your thoughts through natural conversations with an AI
-                brainstorming partner.
+                MindFlow helps you develop ideas through natural voice conversations with an AI brainstorming partner.
+                Speak naturally and get real-time voice responses.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -262,9 +260,9 @@ export default function ServicesPage() {
                     <Brain className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">AI-Powered Conversations</h3>
+                    <h3 className="font-medium text-gray-900">Natural Voice Conversations</h3>
                     <p className="text-sm text-gray-500">
-                      Have natural conversations with our AI assistant to brainstorm ideas and solve problems.
+                      Have real-time voice conversations with our AI assistant to brainstorm ideas and solve problems.
                     </p>
                   </div>
                 </div>
@@ -365,4 +363,3 @@ export default function ServicesPage() {
     </div>
   )
 }
-
