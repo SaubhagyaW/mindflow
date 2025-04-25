@@ -45,15 +45,15 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
       return
     }
 
-    if (!isPaidUser) {
-      toast({
-        title: "Upgrade required",
-        description: "Sharing notes is only available for paid users. Please upgrade your plan.",
-        variant: "destructive",
-      })
-      setIsOpen(false)
-      return
-    }
+    // if (!isPaidUser) {
+    //   toast({
+    //     title: "Upgrade required",
+    //     description: "Sharing notes is only available for paid users. Please upgrade your plan.",
+    //     variant: "destructive",
+    //   })
+    //   setIsOpen(false)
+    //   return
+    // }
 
     // Check if user's email is verified
     if (!session?.user?.isVerified) {
