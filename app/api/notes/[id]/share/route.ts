@@ -49,8 +49,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     // Check if user has permission to share (paid plan)
-    // if (note.user.subscription?.plan === "") {
-      return NextResponse.json({ error: "Sharing is only available for paid plans" }, { status: 403 })
+    // if (note.user.subscription?.plan === "free") {
+    //   return NextResponse.json({ error: "Sharing is only available for paid plans" }, { status: 403 })
     // }
 
     // Update note to mark as shared
