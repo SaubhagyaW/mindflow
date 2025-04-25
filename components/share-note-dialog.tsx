@@ -171,7 +171,7 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
           </Button>
           <Button
             onClick={handleShare}
-            disabled={isSharing || !isPaidUser}
+            disabled={isSharing}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isSharing ? (
