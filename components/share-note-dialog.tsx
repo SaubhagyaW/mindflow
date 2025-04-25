@@ -33,7 +33,8 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
   const { data: session } = useSession()
 
   // Check if user has a paid subscription
-  const isPaidUser = session?.user && session.user.subscription && session.user.subscription.plan !== "free"
+  // const isPaidUser = session?.user && session.user.subscription && session.user.subscription.plan !== "free"
+  const isPaidUser = true
 
   const handleShare = async () => {
     if (!recipient) {
@@ -45,15 +46,15 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
       return
     }
 
-    // if (!isPaidUser) {
-    //   toast({
-    //     title: "Upgrade required",
-    //     description: "Sharing notes is only available for paid users. Please upgrade your plan.",
-    //     variant: "destructive",
-    //   })
-    //   setIsOpen(false)
-    //   return
-    // }
+    if (!isPaidUser) {
+      toast({
+        title: "Upgrade required",
+        description: "Sharing notes is only available for paid users. Please upgrade your plan.",
+        variant: "destructive",
+      })
+      setIsOpen(false)
+      return
+    }
 
     // Check if user's email is verified
     if (!session?.user?.isVerified) {
@@ -171,7 +172,7 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
           </Button>
           <Button
             onClick={handleShare}
-            disabled={isSharing}
+            disabled={isSharing || !isPaidUser}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isSharing ? (
