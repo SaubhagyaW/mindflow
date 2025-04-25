@@ -33,8 +33,7 @@ export function ShareNoteDialog({ noteId, noteTitle, onShareSuccess }: ShareNote
   const { data: session } = useSession()
 
   // Check if user has a paid subscription
-  // const isPaidUser = session?.user && session.user.subscription && session.user.subscription.plan !== "free"
-  const isPaidUser = true
+  const isPaidUser = session?.user && session.user.subscription && session.user.subscription.plan !== "free"
 
   const handleShare = async () => {
     if (!recipient) {

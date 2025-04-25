@@ -22,6 +22,12 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   productionBrowserSourceMaps: false,
+
+  // 👇 English-only i18n config
+  i18n: {
+    locales: ['en'],
+    defaultLocale: 'en',
+  },
 }
 
 mergeConfig(nextConfig, userConfig)

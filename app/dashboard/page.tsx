@@ -10,7 +10,7 @@ import { VoiceConversation } from "@/components/voice-conversation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { DashboardShell } from "@/components/dashboard-shell"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
-import { MessageSquare, ListChecks, Share2, Loader2, Plus, Trash2 } from "lucide-react"
+import { MessageSquare, ListChecks, Share2, Loader2, Plus, Trash2, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ShareNoteDialog } from "@/components/share-note-dialog"
 import { EmailVerificationBanner } from "@/components/email-verification-banner"
@@ -46,6 +46,12 @@ type Note = {
   }
 }
 
+type Subscription = {
+  plan: string;
+  status: string;
+  currentPeriodEnd?: string;
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -54,10 +60,17 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("conversations")
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [notes, setNotes] = useState<Note[]>([])
+  const [userSubscription, setUserSubscription] = useState<Subscription | null>(null)
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true)
 
   // Add state for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null)
+  
+  // Check if user is on free plan or paid plan based on fetched subscription
+  const isPaidUser = session?.user && session.user.subscription && session.user.subscription.plan !== "free"
+  // Check if free user has reached conversation limit
+  const hasReachedLimit = !isPaidUser && conversations.length >= 3
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -66,12 +79,58 @@ export default function DashboardPage() {
     }
   }, [status, router])
 
+  // Fetch user subscription data separately
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!session?.user?.id) return;
+
+      setIsSubscriptionLoading(true);
+      try {
+        const response = await fetch(`/api/user/subscription?userId=${session.user.id}`, {
+          cache: "no-store",
+        });
+
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          console.log("Fetched subscription:", subscriptionData);
+          setUserSubscription(subscriptionData);
+        } else {
+          console.error("Failed to fetch subscription:", await response.json());
+          // Set default to free plan if fetch fails
+          setUserSubscription({ plan: "free", status: "active" });
+        }
+      } catch (error) {
+        console.error("Error fetching subscription:", error);
+        // Set default to free plan if fetch errors
+        setUserSubscription({ plan: "free", status: "active" });
+      } finally {
+        setIsSubscriptionLoading(false);
+      }
+    };
+
+    if (session?.user?.id) {
+      fetchSubscription();
+    }
+  }, [session]);
+
   // Fetch conversations and notes when session is available
   useEffect(() => {
     if (session?.user?.id) {
       fetchData()
     }
   }, [session])
+
+  // Automatically switch to conversations tab if free user tries to create more than 3 conversations
+  useEffect(() => {
+    if (hasReachedLimit && activeTab === "new") {
+      setActiveTab("conversations")
+      toast({
+        title: "Conversation limit reached",
+        description: "Free plan supports up to 3 conversations. Please upgrade for unlimited conversations.",
+        variant: "destructive",
+      })
+    }
+  }, [hasReachedLimit, activeTab, toast])
 
   // Log session data to debug verification status
   useEffect(() => {
@@ -198,8 +257,8 @@ export default function DashboardPage() {
 
   let content
 
-  // Show loading state while checking authentication
-  if (status === "loading" || isLoading) {
+  // Show loading state while checking authentication or loading subscription
+  if (status === "loading" || isLoading || isSubscriptionLoading) {
     content = (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-2">
@@ -220,11 +279,38 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Show upgrade banner for free users */}
+        {!isPaidUser && (
+          <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <Sparkles className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">Free Plan</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>You're currently on the free plan which supports up to 3 conversations. 
+                     {hasReachedLimit ? " You've reached your limit." : ` You have ${3 - conversations.length} remaining.`}</p>
+                </div>
+                <div className="mt-3">
+                  <Button 
+                    variant="outline" 
+                    className="text-blue-700 bg-white border-blue-300 hover:bg-blue-50"
+                    onClick={() => router.push("/pricing")}
+                  >
+                    Upgrade to Premium
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="conversations">Conversations</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
-            <TabsTrigger value="new">New Conversation</TabsTrigger>
+            <TabsTrigger value="new" disabled={hasReachedLimit}>New Conversation</TabsTrigger>
           </TabsList>
 
           <TabsContent value="conversations" className="space-y-4">
@@ -237,7 +323,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">{conversations.length}</div>
                   <p className="text-xs text-gray-500">
-                    {conversations.length === 0 ? "Start your first conversation" : "Conversations saved"}
+                    {conversations.length === 0 ? "Start your first conversation" : `Conversations saved ${!isPaidUser ? `(${conversations.length}/3)` : ""}`}
                   </p>
                 </CardContent>
               </Card>
@@ -286,15 +372,18 @@ export default function DashboardPage() {
                           >
                             <MessageSquare className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-gray-500 hover:text-red-600"
-                            onClick={() => handleDeleteClick(conversation.id)}
-                            title="Delete Conversation"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {/* Only show delete button for paid users */}
+                          {isPaidUser && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-gray-500 hover:text-red-600"
+                              onClick={() => handleDeleteClick(conversation.id)}
+                              title="Delete Conversation"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 mb-4">
@@ -319,7 +408,11 @@ export default function DashboardPage() {
                 <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
                 <p className="text-gray-500 mb-6">Start a new conversation to see it here.</p>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setActiveTab("new")}>
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white" 
+                  onClick={() => setActiveTab("new")}
+                  disabled={hasReachedLimit}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Start Conversation
                 </Button>
@@ -384,7 +477,11 @@ export default function DashboardPage() {
                 <ListChecks className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
                 <p className="text-gray-500 mb-6">Notes are automatically generated from your conversations.</p>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setActiveTab("new")}>
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white" 
+                  onClick={() => setActiveTab("new")}
+                  disabled={hasReachedLimit}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Start Conversation
                 </Button>
@@ -393,17 +490,44 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="new">
-            <Card className="bg-white">
-              <CardHeader>
-                <CardTitle className="text-gray-900">Start a Voice Conversation</CardTitle>
-                <CardDescription className="text-gray-500">
-                  Have a natural voice conversation with your AI brainstorming partner to develop your ideas.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <VoiceConversation onSave={fetchData} />
-              </CardContent>
-            </Card>
+            {hasReachedLimit ? (
+              <Card className="bg-white">
+                <CardHeader>
+                  <CardTitle className="text-gray-900">Conversation Limit Reached</CardTitle>
+                  <CardDescription className="text-gray-500">
+                    Free plan supports up to 3 conversations. Upgrade to premium for unlimited conversations.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Sparkles className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Upgrade to Premium</h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                      As a premium user, you'll enjoy unlimited conversations, the ability to delete conversations, 
+                      and other exclusive features.
+                    </p>
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700 text-white" 
+                      onClick={() => router.push("/pricing")}
+                    >
+                      View Pricing Plans
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white">
+                <CardHeader>
+                  <CardTitle className="text-gray-900">Start a Voice Conversation</CardTitle>
+                  <CardDescription className="text-gray-500">
+                    Have a natural voice conversation with your AI brainstorming partner to develop your ideas.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <VoiceConversation onSave={fetchData} />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 

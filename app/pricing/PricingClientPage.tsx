@@ -18,14 +18,14 @@ export default function PricingClientPage() {
             <Link href="/" className="text-gray-700 hover:text-blue-600 transition">
               Home
             </Link>
-            <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
+            {/* <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
               Services
             </Link>
-            <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Pricing
-            </Link>
+            <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Dashboard
+            </Link> */}
           </nav>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Link href="/sign-in">
               <Button
                 variant="outline"
@@ -37,7 +37,7 @@ export default function PricingClientPage() {
             <Link href="/sign-up">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
             </Link>
-          </div>
+          </div> */}
         </div>
       </header>
 

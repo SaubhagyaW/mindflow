@@ -689,7 +689,8 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
             type: "session.update",
             session: {
               input_audio_transcription: {
-                model: "whisper-1" 
+                model: "whisper-1" ,
+                language: "en" 
               }
             }
           };

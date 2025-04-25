@@ -8,11 +8,18 @@ import { ArrowRight, Share2,Mic,
   FileText,
   Trash2,
   UserCircle, } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { useSession,signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
+  const router = useRouter()
   const { data: session } = useSession()
   const isAuthenticated = !!session?.user
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false })
+    router.push("/")
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-white ">
@@ -43,11 +50,9 @@ export default function Home() {
                   Dashboard
                 </Button>
               </Link>
-              <Link href="/api/auth/signout">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-                  Sign Out
-                </Button>
-              </Link>
+              <Button variant="ghost" className="text-gray-700 hover:text-blue-600" onClick={handleSignOut}>
+                Sign Out
+              </Button>
             </>
           ) : (
             <>
