@@ -286,11 +286,11 @@ export default function ContactPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4 text-white">Company</h3>
               <ul className="space-y-2">
-                <li>
+                {/* <li>
                   <Link href="/about" className="text-blue-100 hover:text-white transition">
                     About
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link href="/contact" className="text-blue-100 hover:text-white transition">
                     Contact
@@ -298,7 +298,7 @@ export default function ContactPage() {
                 </li>
               </ul>
             </div>
-            <div>
+            {/* <div>
               <h3 className="text-lg font-semibold mb-4 text-white">Legal</h3>
               <ul className="space-y-2">
                 <li>
@@ -312,7 +312,7 @@ export default function ContactPage() {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
           <div className="border-t border-blue-700 mt-12 pt-8 text-center text-blue-100">
             <p>&copy; {new Date().getFullYear()} MindFlow. All rights reserved.</p>
