@@ -104,7 +104,7 @@ export default function Home() {
             </div>
             <div className="relative h-[350px] w-[350px] sm:h-[400px] sm:w-[400px] lg:h-[500px] lg:w-[500px]">
               <Image
-                src="/assets/hero.svg?height=500&width=500"
+                src="/assets/images/hero.svg?height=500&width=500"
                 alt="MindFlow in action"
                 fill
                 className="object-cover"
