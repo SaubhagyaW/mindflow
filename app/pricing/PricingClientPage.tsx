@@ -81,19 +81,17 @@ function PricingToggle() {
       <div className="flex items-center space-x-3 mb-8 bg-gray-100 p-1 rounded-lg">
         <button
           onClick={() => setIsAnnual(false)}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            !isAnnual ? "bg-white shadow text-blue-600" : "text-gray-600 hover:text-gray-900"
-          }`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${!isAnnual ? "bg-white shadow text-blue-600" : "text-gray-600 hover:text-gray-900"
+            }`}
         >
           Monthly
         </button>
         <button
           onClick={() => setIsAnnual(true)}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            isAnnual ? "bg-white shadow text-blue-600" : "text-gray-600 hover:text-gray-900"
-          }`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isAnnual ? "bg-white shadow text-blue-600" : "text-gray-600 hover:text-gray-900"
+            }`}
         >
-          Annual <span className="text-green-600 font-medium">Save 33%</span>
+          Annual <span className="text-green-600 font-medium">Save up to 21%</span>
         </button>
       </div>
 
@@ -115,33 +113,41 @@ function PricingToggle() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Up to 3 conversations</span>
+                <span className="text-gray-700">Real-time audio conversations with AI assistant</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Basic conversation storage</span>
+                <span className="text-gray-700">Basic conversation transcription</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Up to 3 saved conversations</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                 <span className="text-gray-700">Automated note generation</span>
               </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Action item extraction</span>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Basic Plan */}
+        {/* Pro Plan */}
         <div className="bg-white rounded-lg shadow-md border-2 border-blue-600 overflow-hidden relative">
           <div className="bg-blue-600 text-white text-center py-2 text-sm font-medium">CURRENTLY AVAILABLE</div>
           <div className="p-6">
-            <h2 className="text-2xl font-bold mb-2 text-gray-900">Basic</h2>
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">Pro</h2>
             <p className="text-gray-600 mb-4">For individual brainstormers</p>
             <div className="flex items-baseline mb-6">
-              <span className="text-4xl font-bold text-gray-900">${isAnnual ? "10" : "15"}</span>
+              <span className="text-4xl font-bold text-gray-900">${isAnnual ? "15" : "19"}</span>
               <span className="text-gray-500 ml-2">/month</span>
             </div>
             {isAnnual && (
               <div className="mb-6 text-sm text-green-600 font-medium">
-                Billed annually (${10 * 12}/year) - Save $60/year
+                Billed annually (${15 * 12}/year) - Save $48/year
               </div>
             )}
             <Link href="/sign-up">
@@ -150,35 +156,43 @@ function PricingToggle() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Real-time audio conversations with AI assistant</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Basic conversation transcription</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                 <span className="text-gray-700">Unlimited conversations</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Advanced conversation storage</span>
+                <span className="text-gray-700">Automated note generation</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Detailed note generation</span>
+                <span className="text-gray-700">Action item extraction</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Delete conversations</span>
+                <span className="text-gray-700">Note sharing via Email</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Share notes via WhatsApp or Email</span>
+                <span className="text-gray-700">Manage conversations</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Standard Plan */}
+        {/* Enterprise Plan */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden relative">
           <div className="bg-gray-200 text-gray-600 text-center py-2 text-sm font-medium">COMING SOON</div>
           <div className="p-6 opacity-75">
-            <h2 className="text-2xl font-bold mb-2 text-gray-900">Standard</h2>
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">Enterprise</h2>
             <p className="text-gray-600 mb-4">For teams and collaboration</p>
-            <div className="flex items-baseline mb-6">
+            {/* <div className="flex items-baseline mb-6">
               <span className="text-4xl font-bold text-gray-900">${isAnnual ? "20" : "30"}</span>
               <span className="text-gray-500 ml-2">/month</span>
             </div>
@@ -186,26 +200,38 @@ function PricingToggle() {
               <div className="mb-6 text-sm text-green-600 font-medium">
                 Billed annually (${20 * 12}/year) - Save $120/year
               </div>
-            )}
+            )} */}
             <Button disabled variant="outline" className="w-full mb-6 text-gray-500">
               Coming Soon
             </Button>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Everything in Basic</span>
+                <span className="text-gray-700">Everything in Pro Plan</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Team collaboration features</span>
+                <span className="text-gray-700">Team collaboration workspace</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Shared conversation library</span>
+                <span className="text-gray-700">Shared conversation spaces</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-gray-700">Advanced analytics</span>
+                <span className="text-gray-700">Team note sharing</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Comment system on conversations</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Project management tools</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="text-gray-700">Team notifications system</span>
               </li>
             </ul>
           </div>

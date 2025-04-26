@@ -249,7 +249,7 @@ export default function ServicesPage() {
           // Content for non-authenticated users
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Discover MindFlow Voice</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900">Discover MindFlow AI Voice Assistant</h2>
               <p className="text-gray-600 mb-6">
                 MindFlow helps you develop ideas through natural voice conversations with an AI brainstorming partner.
                 Speak naturally and get real-time voice responses.
@@ -260,9 +260,9 @@ export default function ServicesPage() {
                     <Brain className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Natural Voice Conversations</h3>
+                    <h3 className="font-medium text-gray-900">AI-Powered Voice Brainstorming</h3>
                     <p className="text-sm text-gray-500">
-                      Have real-time voice conversations with our AI assistant to brainstorm ideas and solve problems.
+                      Transform your ideas with MindFlow's ChatGPT-powered voice assistant. Speak naturally and receive instant AI responses that capture your best thinking.
                     </p>
                   </div>
                 </div>
@@ -271,9 +271,9 @@ export default function ServicesPage() {
                     <Brain className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Automatic Organization</h3>
+                    <h3 className="font-medium text-gray-900">Intelligent Voice Conversations</h3>
                     <p className="text-sm text-gray-500">
-                      MindFlow automatically transcribes your conversations and generates summaries and action items.
+                      Brainstorm solutions through natural audio conversations with our AI assistant. Solve problems faster without typing or manual note-taking.
                     </p>
                   </div>
                 </div>
@@ -282,10 +282,20 @@ export default function ServicesPage() {
                     <Brain className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Easy Sharing</h3>
+                    <h3 className="font-medium text-gray-900">Automatic Transcription & Organization</h3>
                     <p className="text-sm text-gray-500">
-                      Share your ideas and action items with teammates or colleagues via WhatsApp or email.
+                      Your voice conversations are instantly transcribed and organized into searchable summaries and actionable tasks—saving hours of manual work.
                     </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-100 p-2 rounded-full">
+                    <Brain className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Team Collaboration</h3>
+                    <p className="text-sm text-gray-500">
+                      Share generated notes and action items instantly with your team via WhatsApp or email for seamless workflow integration.                    </p>
                   </div>
                 </div>
               </div>
@@ -307,40 +317,60 @@ export default function ServicesPage() {
                   <ul className="text-sm space-y-2">
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      <span className="text-gray-700">Up to 3 conversations</span>
+                      <span className="text-gray-700">Real-time audio conversations with AI assistant</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      <span className="text-gray-700">Basic conversation storage</span>
+                      <span className="text-gray-700">Basic conversation transcription</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="text-gray-700">Up to 3 saved conversations</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
                       <span className="text-gray-700">Automated note generation</span>
                     </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="text-gray-700">Action item extraction</span>
+                    </li>
                   </ul>
                 </div>
                 <div className="bg-white p-4 rounded-lg border-2 border-blue-600">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-900">Basic Plan</h3>
-                    <span className="text-lg font-bold text-gray-900">$15/mo</span>
+                    <h3 className="font-medium text-gray-900">Pro Plan</h3>
+                    <span className="text-lg font-bold text-gray-900">$19/mo</span>
                   </div>
                   <p className="text-sm text-gray-500 mb-3">For individual brainstormers</p>
                   <ul className="text-sm space-y-2">
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="text-gray-700">Real-time audio conversations with AI assistant</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="text-gray-700">Basic conversation transcription</span>
+                    </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
                       <span className="text-gray-700">Unlimited conversations</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      <span className="text-gray-700">Advanced conversation storage</span>
+                      <span className="text-gray-700">Automated note generation</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      <span className="text-gray-700">Detailed note generation</span>
+                      <span className="text-gray-700">Action item extraction</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      <span className="text-gray-700">Share notes via WhatsApp or Email</span>
+                      <span className="text-gray-700">Note sharing via Email</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="text-gray-700">Manage conversations</span>
                     </li>
                   </ul>
                 </div>

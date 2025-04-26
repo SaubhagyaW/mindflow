@@ -95,7 +95,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">Phone</h3>
-                      <p className="text-gray-600">+1 (555) 123-4567</p>
+                      <p className="text-gray-600">+94 (77) 550 7684</p>
                     </div>
                   </div>
 
@@ -105,7 +105,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">Office</h3>
-                      <p className="text-gray-600">123 Innovation Way, San Francisco, CA 94107</p>
+                      <p className="text-gray-600">1200/4, Rajamalwatta Road, Battaramulla, Sri Lanka</p>
                     </div>
                   </div>
                 </div>
@@ -165,34 +165,86 @@ export default function ContactPage() {
 
               <div className="space-y-8">
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How do I get started with MindFlow?</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">What is MindFlow AI Voice Brainstorming?</h3>
                   <p className="text-gray-700">
-                    Getting started is easy! Simply sign up for a free account, and you'll be able to start your first
-                    conversation right away. Our onboarding process will guide you through the basics.
+                    MindFlow is an AI-powered voice brainstorming assistant that helps you capture, organize, and share ideas through natural conversations. Using ChatGPT Voice technology, MindFlow transcribes your spoken thoughts, generates organized notes, and extracts action items automatically.
                   </p>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">What's the difference between plans?</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How does MindFlow's AI voice assistant work?</h3>
                   <p className="text-gray-700">
-                    Our free plan allows you to have up to 3 conversations. Paid plans offer unlimited conversations,
-                    note sharing capabilities, and advanced features like conversation management and analytics.
+                    MindFlow uses advanced speech recognition and AI technology to transform your spoken words into text. As you talk, the AI assistant responds in real-time, helping develop your ideas while automatically organizing the conversation into searchable transcripts, summary notes, and actionable items.
                   </p>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How secure are my conversations?</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Who can benefit from using MindFlow?</h3>
                   <p className="text-gray-700">
-                    Security is a top priority at MindFlow. All your conversations are encrypted and stored securely. We
-                    never share your data with third parties without your explicit consent.
+                    MindFlow is ideal for professionals across various fields including business strategists, creative professionals, writers, project managers, entrepreneurs, researchers, and anyone who needs to capture and organize ideas efficiently. Teams also benefit from the collaboration features in our Enterprise plan.
                   </p>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Can I cancel my subscription anytime?</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">What makes MindFlow different from other note-taking apps?</h3>
                   <p className="text-gray-700">
-                    Yes, you can cancel your subscription at any time. Your subscription will remain active until the
-                    end of your current billing cycle, after which it will not renew.
+                    Unlike traditional note-taking applications, MindFlow uses conversational AI to actively participate in your brainstorming process. The system not only records and transcribes but also responds intelligently to help develop your ideas, automatically organizes your thoughts, and generates structured outputs without manual effort.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How accurate is MindFlow's transcription?</h3>
+                  <p className="text-gray-700">
+                    MindFlow uses OpenAI's advanced transcription technology, which offers high accuracy for clear speech in English. The system continues to improve with use and works best in quiet environments with minimal background noise.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How does MindFlow handle my data and conversations?</h3>
+                  <p className="text-gray-700">
+                    MindFlow prioritizes data security and privacy. All conversations are encrypted during transmission and storage. We do not use your conversation content to train our models without explicit permission, and you maintain ownership of all your content.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Can I delete my conversation history?</h3>
+                  <p className="text-gray-700">
+                    Yes, Pro and Enterprise users can delete individual conversations or their entire conversation history at any time. Free users have limited conversation management capabilities but can still request data deletion through customer support.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Is there a free version of MindFlow?</h3>
+                  <p className="text-gray-700">
+                    Yes, MindFlow offers a free plan that includes up to 3 saved conversations, basic transcription, and essential note generation features. This allows you to experience the core functionality before upgrading to a paid plan.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">What do I get with the Pro plan?</h3>
+                  <p className="text-gray-700">
+                    The Pro plan ($19/month) includes unlimited conversations, advanced note generation, conversation management (create, delete) and the ability to share notes via email or WhatsApp. It's designed for individual professionals who need comprehensive brainstorming tools.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Does MindFlow offer team collaboration features?</h3>
+                  <p className="text-gray-700">
+                    Our Enterprise plan will soon unlock powerful team productivity tools including shared conversation workspaces, customizable role-based permissions, real-time team notifications, interactive comment threads, and comprehensive action item management with task assignment capabilities and status tracking dashboards—transforming how teams brainstorm and execute ideas together.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How do I start my first conversation with MindFlow?</h3>
+                  <p className="text-gray-700">
+                    After creating an account, simply click "New Conversation" on your dashboard, allow microphone access when prompted, and begin speaking. The AI assistant will respond in real-time, and your conversation will be automatically transcribed and organized.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">How can I share my brainstorming results with others?</h3>
+                  <p className="text-gray-700">
+                    MindFlow automatically generates shareable notes from your conversations. Pro and Enterprise users can share these notes directly via email or WhatsApp with colleagues or team members. Enterprise users enjoy additional team sharing features through shared workspaces.
                   </p>
                 </div>
               </div>

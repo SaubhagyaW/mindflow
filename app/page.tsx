@@ -3,12 +3,14 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Share2,Mic,
+import {
+  ArrowRight, Share2, Mic,
   Save,
   FileText,
   Trash2,
-  UserCircle, } from "lucide-react"
-import { useSession,signOut } from "next-auth/react"
+  UserCircle,
+} from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 export default function Home() {
@@ -23,55 +25,55 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white ">
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Image src="/assets/png ai.png" alt="MindFlow Logo" width={100} height={60} className="h-16 w-auto" />
-        </div>
-        <nav className="hidden md:flex items-center gap-6 -ml-2">
-          <Link href="/" className="text-gray-700 hover:text-blue-600 transition">
-            Home
-          </Link>
-          <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
-            Services
-          </Link>
-          <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition">
-            Pricing
-          </Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <>
-              <Link href="/dashboard">
-                <Button
-                  variant="outline"
-                  className="hidden md:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50"
-                >
-                  Dashboard
+      <header className="fixed top-0 left-0 right-0 z-50 border-b bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Image src="/assets/png ai.png" alt="MindFlow Logo" width={100} height={60} className="h-16 w-auto" />
+          </div>
+          <nav className="hidden md:flex items-center gap-6 -ml-2">
+            <Link href="/" className="text-gray-700 hover:text-blue-600 transition">
+              Home
+            </Link>
+            <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
+              Services
+            </Link>
+            <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition">
+              Pricing
+            </Link>
+          </nav>
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard">
+                  <Button
+                    variant="outline"
+                    className="hidden md:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button variant="ghost" className="text-gray-700 hover:text-blue-600" onClick={handleSignOut}>
+                  Sign Out
                 </Button>
-              </Link>
-              <Button variant="ghost" className="text-gray-700 hover:text-blue-600" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link href="/sign-in">
-                <Button
-                  variant="outline"
-                  className="hidden md:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50"
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
-              </Link>
-            </>
-          )}
+              </>
+            ) : (
+              <>
+                <Link href="/sign-in">
+                  <Button
+                    variant="outline"
+                    className="hidden md:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50"
+                  >
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -79,11 +81,13 @@ export default function Home() {
           <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Transform Your Ideas with AI-Powered Conversations
+                AI-Powered Voice Brainstorming
               </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                MindFlow helps you capture, organize, and share your thoughts through natural conversations with an AI
-                brainstorming partner.
+              <h1 className="text-xl md:text-xl font-bold text-gray-900 mb-6">
+                Transform Ideas into Action with MindFlow
+              </h1>
+              <p className="text-l text-gray-600 mb-8">
+                MindFlow revolutionizes creative workflows by connecting you with an intelligent ChatGPT-powered voice assistant that captures, transcribes, and organizes your spoken ideas in real-time. Unlike traditional note-taking apps or AI tools, our brainstorming platform turns natural conversations into structured action plans, helping professionals, creators, and business teams unlock breakthrough thinking without losing brilliant ideas to forgetfulness or disorganization.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/services">
@@ -114,7 +118,7 @@ export default function Home() {
           </div>
         </section>
 
-                {/* Features Section */}
+        {/* Features Section */}
         <section className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
@@ -126,9 +130,9 @@ export default function Home() {
                 <div className="bg-blue-100 p-3 rounded-full w-fit mb-4">
                   <UserCircle className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">User Authentication</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">Seamless User Authentication</h3>
                 <p className="text-gray-600">
-                  Secure sign-up and sign-in with easy profile management.
+                  Create your personal account with enterprise-grade security and start brainstorming in minutes with our simple profile management system.
                 </p>
               </div>
 
@@ -137,9 +141,9 @@ export default function Home() {
                 <div className="bg-blue-100 p-3 rounded-full w-fit mb-4">
                   <Mic className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">Audio Conversations</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">Natural Audio Conversations</h3>
                 <p className="text-gray-600">
-                  Talk naturally with an AI brainstorming partner powered by OpenAI's ChatGPT Voice.
+                  Talk naturally with your AI brainstorming partner powered by OpenAI's ChatGPT Voice for intelligent, real-time responses to develop your ideas.
                 </p>
               </div>
 
@@ -148,9 +152,9 @@ export default function Home() {
                 <div className="bg-blue-100 p-3 rounded-full w-fit mb-4">
                   <Save className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">Conversation Storage</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">Intelligent Conversation Storage</h3>
                 <p className="text-gray-600">
-                  Automatically transcribe and store your conversations for future reference.
+                  Every brainstorming session is automatically transcribed and securely stored, allowing you to access your complete conversation history anytime.
                 </p>
               </div>
 
@@ -159,9 +163,9 @@ export default function Home() {
                 <div className="bg-blue-100 p-3 rounded-full w-fit mb-4">
                   <FileText className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">Note Generation</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">Automated Note Generation</h3>
                 <p className="text-gray-600">
-                  Get bullet-point summaries and action items extracted from your conversations.
+                  Get concise bullet-point summaries and action items automatically extracted from your conversations—no manual note-taking required.
                 </p>
               </div>
 
@@ -170,9 +174,9 @@ export default function Home() {
                 <div className="bg-blue-100 p-3 rounded-full w-fit mb-4">
                   <Share2 className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">Easy Sharing</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">Effortless Sharing Capabilities</h3>
                 <p className="text-gray-600">
-                  Share your notes with contacts via WhatsApp or Email (Premium).
+                  Share notes directly via WhatsApp or Email with just a few clicks, distributing ideas and action items without disrupting your creative flow.
                 </p>
               </div>
 
@@ -181,16 +185,16 @@ export default function Home() {
                 <div className="bg-blue-100 p-3 rounded-full w-fit mb-4">
                   <Trash2 className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">Conversation Management</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">Comprehensive Conversation Management</h3>
                 <p className="text-gray-600">
-                  View history and delete conversations as needed (Premium).
+                  Easily navigate your brainstorming history with intuitive controls to view, categorize, and delete conversations as needed.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        
+
         {/* Demo Video Section */}
         <section className="bg-blue-50 py-20">
           <div className="container mx-auto px-4 text-center">
@@ -230,7 +234,7 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-              <Image
+                <Image
                   src="/assets/png ai.png"
                   alt="MindFlow Logo"
                   width={24}

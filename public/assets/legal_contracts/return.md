@@ -1,4 +1,4 @@
-## Return Policy
+## 2. Return Policy
 
 ### 2.1 No Refunds
 

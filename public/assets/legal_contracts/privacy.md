@@ -1,4 +1,4 @@
-## Privacy Policy
+## 3. Privacy Policy
 
 ### 3.1 Information Collection and Use
 
