@@ -201,7 +201,7 @@ export default function PrivacyPolicyPage() {
                   className="h-16 w-auto rounded-2xl"
                 />
               </div>
-              <p className="text-blue-100">AI-powered brainstorming to capture, organize, and share your ideas.</p>
+              <p className="text-blue-100">AI-Powered Voice Brainstorming: Transform Ideas into Action with MindFlow</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4 text-white">Product</h3>
