@@ -1,4 +1,4 @@
-## 1. Terms and Conditions
+## Terms and Conditions
 
 ### 1.1 Acceptance of Terms
 

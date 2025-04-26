@@ -12,6 +12,19 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import ReactMarkdown from "react-markdown"
 
+// Custom styles for markdown content
+const markdownStyles = {
+  heading: "font-bold text-gray-900 mt-6 mb-3",
+  h1: "text-2xl",
+  h2: "text-xl",
+  h3: "text-lg",
+  h4: "text-base",
+  paragraph: "mb-4 text-gray-700 leading-relaxed",
+  list: "list-disc ml-6 mb-4 text-gray-700",
+  listItem: "mb-1",
+  link: "text-blue-600 hover:underline",
+}
+
 export default function TermsPage() {
     const { update, status } = useSession()
     const router = useRouter()
@@ -133,6 +146,19 @@ export default function TermsPage() {
         )
     }
 
+  // Custom components for ReactMarkdown
+  const MarkdownComponents = {
+    h1: ({ node, ...props }) => <h1 className={`${markdownStyles.heading} ${markdownStyles.h1}`} {...props} />,
+    h2: ({ node, ...props }) => <h2 className={`${markdownStyles.heading} ${markdownStyles.h2}`} {...props} />,
+    h3: ({ node, ...props }) => <h3 className={`${markdownStyles.heading} ${markdownStyles.h3}`} {...props} />,
+    h4: ({ node, ...props }) => <h4 className={`${markdownStyles.heading} ${markdownStyles.h4}`} {...props} />,
+    p: ({ node, ...props }) => <p className={markdownStyles.paragraph} {...props} />,
+    ul: ({ node, ...props }) => <ul className={markdownStyles.list} {...props} />,
+    ol: ({ node, ...props }) => <ol className={`${markdownStyles.list} list-decimal`} {...props} />,
+    li: ({ node, ...props }) => <li className={markdownStyles.listItem} {...props} />,
+    a: ({ node, ...props }) => <a className={markdownStyles.link} {...props} target="_blank" rel="noopener noreferrer" />,
+  }
+
     // Only render content when authenticated
     if (status === "authenticated") {
         return (
@@ -162,29 +188,27 @@ export default function TermsPage() {
                             </TabsList>
 
               {isLoading ? (
-                <div className="p-6 flex justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                  <p className="text-gray-600">Loading policy documents...</p>
                 </div>
               ) : (
                 <>
                             <TabsContent value="terms" className="p-6">
-                                <h2 className="text-xl font-bold mb-4 text-gray-900">Terms and Conditions</h2>
                                 <div className="prose max-w-none text-gray-700">
-                      <ReactMarkdown>{termsContent}</ReactMarkdown>
+                      <ReactMarkdown components={MarkdownComponents}>{termsContent}</ReactMarkdown>
                                 </div>
                             </TabsContent>
 
                             <TabsContent value="return" className="p-6">
-                                <h2 className="text-xl font-bold mb-4 text-gray-900">Return Policy</h2>
                                 <div className="prose max-w-none text-gray-700">
-                      <ReactMarkdown>{returnContent}</ReactMarkdown>
+                      <ReactMarkdown components={MarkdownComponents}>{returnContent}</ReactMarkdown>
                                 </div>
                             </TabsContent>
 
                             <TabsContent value="privacy" className="p-6">
-                                <h2 className="text-xl font-bold mb-4 text-gray-900">Privacy Policy</h2>
                                 <div className="prose max-w-none text-gray-700">
-                      <ReactMarkdown>{privacyContent}</ReactMarkdown>
+                      <ReactMarkdown components={MarkdownComponents}>{privacyContent}</ReactMarkdown>
                                 </div>
                             </TabsContent>
                 </>
