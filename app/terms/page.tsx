@@ -1,259 +1,264 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useSession } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import ReactMarkdown from "react-markdown"
+import ReactMarkdown from 'react-markdown'
+import { useState, useEffect } from 'react'
 
-// Custom styles for markdown content
-const markdownStyles = {
-  heading: "font-bold text-gray-900 mt-6 mb-3",
-  h1: "text-2xl",
-  h2: "text-xl",
-  h3: "text-lg",
-  h4: "text-base",
-  paragraph: "mb-4 text-gray-700 leading-relaxed",
-  list: "list-disc ml-6 mb-4 text-gray-700",
-  listItem: "mb-1",
-  link: "text-blue-600 hover:underline",
-}
+// Custom components for the ReactMarkdown renderer
+const MarkdownComponents = {
+    h1: ({ node, ...props }) => (
+        <h1 className="text-3xl font-bold mt-8 mb-4 text-gray-900" {...props} />
+    ),
+    h2: ({ node, ...props }) => (
+        <h2 className="text-2xl font-bold mt-8 mb-3 text-gray-900 border-b pb-2 border-gray-200" {...props} />
+    ),
+    h3: ({ node, ...props }) => (
+        <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-800" {...props} />
+    ),
+    p: ({ node, ...props }) => (
+        <p className="my-4 text-gray-700 leading-relaxed" {...props} />
+    ),
+    ul: ({ node, ...props }) => (
+        <ul className="my-4 ml-6 list-disc text-gray-700" {...props} />
+    ),
+    ol: ({ node, ...props }) => (
+        <ol className="my-4 ml-6 list-decimal text-gray-700" {...props} />
+    ),
+    li: ({ node, children, ...props }) => (
+        <li className="mb-2" {...props}>
+            {children}
+        </li>
+    ),
+    a: ({ node, ...props }) => (
+        <a className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" {...props} target="_blank" rel="noopener noreferrer" />
+    ),
+    blockquote: ({ node, ...props }) => (
+        <blockquote className="my-4 pl-4 border-l-4 border-gray-300 text-gray-600 italic" {...props} />
+    ),
+    strong: ({ node, ...props }) => (
+        <strong className="font-semibold text-gray-900" {...props} />
+    ),
+    em: ({ node, ...props }) => (
+        <em className="italic" {...props} />
+    ),
+    code: ({ node, inline, ...props }) => (
+        inline ?
+            <code className="px-1 py-0.5 rounded bg-gray-100 text-gray-800 font-mono text-sm" {...props} /> :
+            <code className="block p-4 my-4 rounded bg-gray-100 text-gray-800 font-mono text-sm overflow-x-auto" {...props} />
+    ),
+    hr: ({ node, ...props }) => (
+        <hr className="my-8 border-gray-200" {...props} />
+    ),
+    table: ({ node, ...props }) => (
+        <div className="overflow-x-auto my-6">
+            <table className="min-w-full border-collapse border border-gray-300" {...props} />
+        </div>
+    ),
+    thead: ({ node, ...props }) => (
+        <thead className="bg-gray-100" {...props} />
+    ),
+    tbody: ({ node, ...props }) => (
+        <tbody className="divide-y divide-gray-300" {...props} />
+    ),
+    tr: ({ node, ...props }) => (
+        <tr className="hover:bg-gray-50" {...props} />
+    ),
+    th: ({ node, ...props }) => (
+        <th className="px-4 py-3 border border-gray-300 text-left text-sm font-semibold text-gray-900" {...props} />
+    ),
+    td: ({ node, ...props }) => (
+        <td className="px-4 py-3 border border-gray-300 text-sm text-gray-700" {...props} />
+    ),
+};
 
 export default function TermsPage() {
-    const { update, status } = useSession()
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
-    const { toast } = useToast()
-    const [isAccepting, setIsAccepting] = useState(false)
-    const [hasAccepted, setHasAccepted] = useState(false)
-  const [termsContent, setTermsContent] = useState("")
-  const [privacyContent, setPrivacyContent] = useState("")
-  const [returnContent, setReturnContent] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
+    const [content, setContent] = useState<string>('')
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const lastUpdated = "April 8, 2025" // Hardcoded date as fallback
 
-    // Redirect to sign-in if not authenticated
     useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push("/sign-in")
-        }
-    }, [status, router])
+        const fetchContent = async () => {
+            try {
+                const response = await fetch('/assets/legal_contracts/terms.md')
 
-  // Load markdown content
-  useEffect(() => {
-    const loadMarkdownContent = async () => {
-      try {
-        setIsLoading(true)
+                if (!response.ok) {
+                    throw new Error('Failed to load terms.md')
+                }
 
-        // Fetch all markdown files in parallel
-        const [termsResponse, privacyResponse, returnResponse] = await Promise.all([
-          fetch('/assets/legal_contracts/terms.md'),
-          fetch('/assets/legal_contracts/privacy.md'),
-          fetch('/assets/legal_contracts/return.md')
-        ])
+                // Get the raw text from the markdown file
+                const text = await response.text()
 
-        if (!termsResponse.ok || !privacyResponse.ok || !returnResponse.ok) {
-          throw new Error("Failed to load one or more policy files")
-        }
+                // Simple parsing to remove frontmatter if present
+                // This assumes frontmatter is enclosed in --- blocks at the start
+                let processedContent = text
 
-        const terms = await termsResponse.text()
-        const privacy = await privacyResponse.text()
-        const returnPolicy = await returnResponse.text()
+                if (text.startsWith('---')) {
+                    const endOfFrontmatter = text.indexOf('---', 3)
+                    if (endOfFrontmatter !== -1) {
+                        processedContent = text.slice(endOfFrontmatter + 3).trim()
+                    }
+                }
 
-        setTermsContent(terms)
-        setPrivacyContent(privacy)
-        setReturnContent(returnPolicy)
-      } catch (error) {
-        console.error("Error loading markdown files:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load policy documents. Please try again later.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    if (status === "authenticated") {
-      loadMarkdownContent()
-    }
-  }, [status, toast])
-
-    const handleAcceptTerms = async () => {
-        if (!hasAccepted) {
-            toast({
-                title: "Please accept the terms",
-                description: "You must accept the terms to continue",
-                variant: "destructive",
-            })
-            return
-        }
-
-        setIsAccepting(true)
-
-        try {
-            const response = await fetch("/api/user/accept-terms", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-
-            if (!response.ok) {
-                throw new Error("Failed to accept terms")
+                setContent(processedContent)
+            } catch (error) {
+                console.error('Error loading markdown file:', error)
+                setContent('# Error Loading Terms of Service\n\nWe apologize, but there was an error loading our terms of service. Please try again later or contact us at support@mindflow.com.')
+            } finally {
+                setIsLoading(false)
             }
-
-            // Update the session to reflect that terms have been accepted
-            await update({ hasAcceptedTerms: true })
-
-            toast({
-                title: "Terms accepted",
-                description: "Thank you for accepting our terms and conditions",
-            })
-
-            // Add a small delay to ensure the session is updated before redirecting
-            setTimeout(() => {
-                router.push(callbackUrl)
-            }, 1000)
-        } catch (error) {
-            console.error("Error accepting terms:", error)
-            toast({
-                title: "Error",
-                description: "Failed to accept terms. Please try again.",
-                variant: "destructive",
-            })
-        } finally {
-            setIsAccepting(false)
         }
-    }
 
-    // Show loading state while checking authentication
-    if (status === "loading") {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-white">
-                <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                    <p className="text-lg text-gray-600">Loading...</p>
-                </div>
-            </div>
-        )
-    }
+        fetchContent()
+    }, [])
 
-  // Custom components for ReactMarkdown
-  const MarkdownComponents = {
-    h1: ({ node, ...props }) => <h1 className={`${markdownStyles.heading} ${markdownStyles.h1}`} {...props} />,
-    h2: ({ node, ...props }) => <h2 className={`${markdownStyles.heading} ${markdownStyles.h2}`} {...props} />,
-    h3: ({ node, ...props }) => <h3 className={`${markdownStyles.heading} ${markdownStyles.h3}`} {...props} />,
-    h4: ({ node, ...props }) => <h4 className={`${markdownStyles.heading} ${markdownStyles.h4}`} {...props} />,
-    p: ({ node, ...props }) => <p className={markdownStyles.paragraph} {...props} />,
-    ul: ({ node, ...props }) => <ul className={markdownStyles.list} {...props} />,
-    ol: ({ node, ...props }) => <ol className={`${markdownStyles.list} list-decimal`} {...props} />,
-    li: ({ node, ...props }) => <li className={markdownStyles.listItem} {...props} />,
-    a: ({ node, ...props }) => <a className={markdownStyles.link} {...props} target="_blank" rel="noopener noreferrer" />,
-  }
-
-    // Only render content when authenticated
-    if (status === "authenticated") {
-        return (
-            <div className="flex min-h-screen flex-col bg-white">
-                <header className="border-b bg-white">
-                    <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                        <Link href="/" className="flex items-center gap-2">
-                            <Image src="/assets/png ai.png" alt="MindFlow Logo" width={32} height={32} className="h-16 w-auto" />
+    return (
+        <div className="flex flex-col min-h-screen bg-white">
+            <header className="border-b bg-white">
+                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+                    <Link href="/" className="flex items-center gap-2">
+                        <Image src="/assets/png ai.png" alt="MindFlow Logo" width={40} height={40} className="h-16 w-auto" />
+                    </Link>
+                    <nav className="hidden md:flex items-center gap-6">
+                        <Link href="/" className="text-gray-700 hover:text-blue-600 transition">
+                            Home
+                        </Link>
+                        <Link href="/about" className="text-gray-700 hover:text-blue-600 transition">
+                            About
+                        </Link>
+                        <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
+                            Services
+                        </Link>
+                        <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition">
+                            Pricing
+                        </Link>
+                        <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition">
+                            Contact
+                        </Link>
+                    </nav>
+                    <div className="flex items-center gap-4">
+                        <Link href="/sign-in">
+                            <Button
+                                variant="outline"
+                                className="hidden md:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50"
+                            >
+                                Sign In
+                            </Button>
+                        </Link>
+                        <Link href="/sign-up">
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
                         </Link>
                     </div>
-                </header>
-
-                <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">Terms and Policies</h1>
-                        <p className="text-gray-600 mt-2">
-                            Please review and accept our terms and policies to continue using MindFlow.
-                        </p>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                        <Tabs defaultValue="terms" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="terms">Terms and Conditions</TabsTrigger>
-                                <TabsTrigger value="return">Return Policy</TabsTrigger>
-                                <TabsTrigger value="privacy">Privacy Policy</TabsTrigger>
-                            </TabsList>
-
-              {isLoading ? (
-                <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                  <p className="text-gray-600">Loading policy documents...</p>
                 </div>
-              ) : (
-                <>
-                            <TabsContent value="terms" className="p-6">
-                                <div className="prose max-w-none text-gray-700">
-                      <ReactMarkdown components={MarkdownComponents}>{termsContent}</ReactMarkdown>
-                                </div>
-                            </TabsContent>
+            </header>
 
-                            <TabsContent value="return" className="p-6">
-                                <div className="prose max-w-none text-gray-700">
-                      <ReactMarkdown components={MarkdownComponents}>{returnContent}</ReactMarkdown>
-                                </div>
-                            </TabsContent>
-
-                            <TabsContent value="privacy" className="p-6">
-                                <div className="prose max-w-none text-gray-700">
-                      <ReactMarkdown components={MarkdownComponents}>{privacyContent}</ReactMarkdown>
-                                </div>
-                            </TabsContent>
-                </>
-              )}
-                        </Tabs>
-                    </div>
-
-                    <div className="mt-8 flex flex-col items-center">
-                        <div className="flex items-center space-x-2 mb-6">
-                            <Checkbox
-                                id="terms"
-                                checked={hasAccepted}
-                                onCheckedChange={(checked) => setHasAccepted(checked as boolean)}
-                disabled={isLoading}
-                            />
-                            <label
-                                htmlFor="terms"
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700"
-                            >
-                                I have read and agree to the Terms and Conditions, Return Policy, and Privacy Policy
-                            </label>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <Button
-                                onClick={handleAcceptTerms}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={isAccepting || !hasAccepted || isLoading}
-                            >
-                                {isAccepting ? "Accepting..." : "Accept and Continue"}
-                            </Button>
-
-                            <Link href="/api/auth/signout">
-                                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                                    <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Sign Out
-                                </Button>
-                            </Link>
+            <main className="flex-1">
+                {/* Hero Section */}
+                <section className="bg-blue-50 py-12">
+                    <div className="container mx-auto px-4">
+                        <div className="max-w-3xl mx-auto">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
+                            <p className="text-gray-600">Last updated: {lastUpdated}</p>
                         </div>
                     </div>
-                </main>
-            </div>
-        )
-    }
+                </section>
 
-    // Fallback - should not reach here due to the redirect
-    return null
+                {/* Terms of Service Content */}
+                <section className="py-12">
+                    <div className="container mx-auto px-4">
+                        <div className="max-w-3xl mx-auto">
+                            {isLoading ? (
+                                <div className="flex justify-center items-center py-20">
+                                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mr-2" />
+                                    <span className="text-gray-600">Loading terms of service...</span>
+                                </div>
+                            ) : (
+                                <div className="markdown-content">
+                                    <ReactMarkdown components={MarkdownComponents}>{content}</ReactMarkdown>
+                                </div>
+                            )}
+
+                            <div className="mt-12">
+                                <Link href="/">
+                                    <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        Back to Home
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer className="bg-blue-500 text-white py-12">
+                <div className="container mx-auto px-4">
+                    <div className="grid md:grid-cols-4 gap-8">
+                        <div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <Image
+                                    src="/assets/png ai.png"
+                                    alt="MindFlow Logo"
+                                    width={24}
+                                    height={24}
+                                    className="h-16 w-auto rounded-2xl"
+                                />
+                            </div>
+                            <p className="text-blue-100">AI-Powered Voice Brainstorming: Transform Ideas into Action with MindFlow</p>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4 text-white">Product</h3>
+                            <ul className="space-y-2">
+                                <li>
+                                    <Link href="/services" className="text-blue-100 hover:text-white transition">
+                                        Services
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/pricing" className="text-blue-100 hover:text-white transition">
+                                        Pricing
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4 text-white">Company</h3>
+                            <ul className="space-y-2">
+                                <li>
+                                    <Link href="/contact" className="text-blue-100 hover:text-white transition">
+                                        Contact
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4 text-white">Legal</h3>
+                            <ul className="space-y-2">
+                                <li>
+                                    <Link href="/terms" className="text-blue-100 hover:text-white transition">
+                                        Terms of Service
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/privacy" className="text-blue-100 hover:text-white transition">
+                                        Privacy Policy
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/return" className="text-blue-100 hover:text-white transition">
+                                        Return Policy
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="border-t border-blue-700 mt-12 pt-8 text-center text-blue-100">
+                        <p>&copy; {new Date().getFullYear()} MindFlow. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    )
 }

@@ -274,21 +274,26 @@ export default function Home() {
                 </li>
               </ul>
             </div>
-            {/* <div>
+            <div>
               <h3 className="text-lg font-semibold mb-4 text-white">Legal</h3>
               <ul className="space-y-2">
+                <li>
+                  <Link href="/terms" className="text-blue-100 hover:text-white transition">
+                    Terms of Service
+                  </Link>
+                </li>
                 <li>
                   <Link href="/privacy" className="text-blue-100 hover:text-white transition">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="text-blue-100 hover:text-white transition">
-                    Terms of Service
+                  <Link href="/return" className="text-blue-100 hover:text-white transition">
+                    Return Policy
                   </Link>
                 </li>
               </ul>
-            </div> */}
+            </div>
           </div>
           <div className="border-t border-blue-700 mt-12 pt-8 text-center text-blue-100">
             <p>&copy; {new Date().getFullYear()} MindFlow. All rights reserved.</p>

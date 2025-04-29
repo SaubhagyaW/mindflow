@@ -74,7 +74,7 @@ const MarkdownComponents = {
   ),
 };
 
-export default function PrivacyPolicyPage() {
+export default function ReturnPage() {
   const [content, setContent] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const lastUpdated = "April 8, 2025" // Hardcoded date as fallback
@@ -82,10 +82,10 @@ export default function PrivacyPolicyPage() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await fetch('/assets/legal_contracts/privacy.md')
+        const response = await fetch('/assets/legal_contracts/return.md')
 
         if (!response.ok) {
-          throw new Error('Failed to load privacy policy')
+          throw new Error('Failed to load return policy')
         }
 
         // Get the raw text from the markdown file
@@ -105,7 +105,7 @@ export default function PrivacyPolicyPage() {
         setContent(processedContent)
       } catch (error) {
         console.error('Error loading markdown file:', error)
-        setContent('# Error Loading Privacy Policy\n\nWe apologize, but there was an error loading our privacy policy. Please try again later or contact us at support@mindflow.com.')
+        setContent('# Error Loading Return Policy\n\nWe apologize, but there was an error loading our return policy. Please try again later or contact us at support@mindflow.com.')
       } finally {
         setIsLoading(false)
       }
@@ -159,20 +159,20 @@ export default function PrivacyPolicyPage() {
         <section className="bg-blue-50 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">Return Policy</h1>
               <p className="text-gray-600">Last updated: {lastUpdated}</p>
             </div>
           </div>
         </section>
 
-        {/* Privacy Policy Content */}
+        {/* Return Policy Content */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               {isLoading ? (
                 <div className="flex justify-center items-center py-20">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600 mr-2" />
-                  <span className="text-gray-600">Loading privacy policy...</span>
+                  <span className="text-gray-600">Loading return policy...</span>
                 </div>
               ) : (
                 <div className="markdown-content">
