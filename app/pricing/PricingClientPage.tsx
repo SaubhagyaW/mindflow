@@ -26,39 +26,39 @@ export function PricingClientPage() {
       available: true,
     },
     {
+      name: "Pro 2h",
+      description: "For individual brainstormers",
+      price: { monthly: 15, annual: 11 },
+      features: ["Real-time audio conversations with AI assistant", "Basic conversation transcription", "Up to 2 hours conversation time", "Automated note generation", "Action item extraction", "Note sharing via Email", "Manage conversations"],
+      highlight: true,
+      planId: "pro-2h",
+      available: true,
+    },
+    {
+      name: "Pro 5h",
+      description: "For individual brainstormers",
+      price: { monthly: 19, annual: 15 },
+      features: ["Real-time audio conversations with AI assistant", "Basic conversation transcription", "Up to 5 hours conversation time", "Automated note generation", "Action item extraction", "Note sharing via Email", "Manage conversations"],
+      highlight: false,
+      planId: "pro-5h",
+      available: true,
+    },
+    {
       name: "Pro 10h",
       description: "For individual brainstormers",
-      price: { monthly: 35, annual: 30 },
+      price: { monthly: 25, annual: 22 },
       features: ["Real-time audio conversations with AI assistant", "Basic conversation transcription", "Up to 10 hours conversation time", "Automated note generation", "Action item extraction", "Note sharing via Email", "Manage conversations"],
-      highlight: true,
+      highlight: false,
       planId: "pro-10h",
-      available: true,
-    },
-    {
-      name: "Pro 20h",
-      description: "For individual brainstormers",
-      price: { monthly: 49, annual: 45 },
-      features: ["Real-time audio conversations with AI assistant", "Basic conversation transcription", "Up to 20 hours conversation time", "Automated note generation", "Action item extraction", "Note sharing via Email", "Manage conversations"],
-      highlight: false,
-      planId: "pro-20h",
-      available: true,
-    },
-    {
-      name: "Pro 30h",
-      description: "For individual brainstormers",
-      price: { monthly: 64, annual: 60 },
-      features: ["Real-time audio conversations with AI assistant", "Basic conversation transcription", "Up to 30 hours conversation time", "Automated note generation", "Action item extraction", "Note sharing via Email", "Manage conversations"],
-      highlight: false,
-      planId: "pro-30h",
       available: true,
     },
     {
       name: "Enterprise",
       description: "For teams and collaboration",
-      price: { monthly: 64, annual: 60 },
+      price: { monthly: 0, annual: 0 },
       features: ["Everything in Pro Plan", "Team collaboration workspace", "Shared conversation spaces", "Team note sharing", "Comment system on conversations", "Project management tools", "Team notifications system"],
       highlight: false,
-      planId: "pro-30h",
+      planId: "enterprise",
       available: false,
     },
   ]
@@ -234,7 +234,7 @@ export function PricingClientPage() {
             >
               Annual 
               <span className="ml-2 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                Save up to 15%
+                Save up to 36%
               </span>
             </TabsTrigger>
           </TabsList>

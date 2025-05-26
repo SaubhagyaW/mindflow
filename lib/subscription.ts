@@ -15,18 +15,33 @@ type SubscriptionData = {
  * Get the monthly time limit in seconds for a subscription plan
  */
 export function getPlanTimeLimit(plan: string): number {
+  // PROD
   switch (plan) {
     case "free":
-      return 60 * 5 * 1 // 1 hour
+      return 60 * 30 // 30 mins
+    case "pro-2h":
+      return 60 * 60 * 2 // 2 hours
+    case "pro-5h":
+      return 60 * 60 * 5 // 5 hours
     case "pro-10h":
       return 60 * 60 * 10 // 10 hours
-    case "pro-20h":
-      return 60 * 60 * 20 // 20 hours
-    case "pro-unlimited":
-      return -1 // Unlimited
     default:
-      return 60 * 60 * 1 // Default to 1 hour
+      return 60 * 30 // Default to 30 mins (Free plan)
   }
+
+  // // DEV
+  // switch (plan) {
+  //   case "free":
+  //     return 60 * 5 // 5 mins
+  //   case "pro-2h":
+  //     return 60 * 10 // 10 mins
+  //   case "pro-5h":
+  //     return 60 * 15 // 15 mins
+  //   case "pro-10h":
+  //     return 60 * 20 // 20 mins
+  //   default:
+  //     return 60 * 5 // Default to 5 mins (Free plan)
+  // }
 }
 
 /**
