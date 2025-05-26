@@ -1,9 +1,15 @@
 import type React from "react"
+import { SiteFooter } from "@/components/site-footer"
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return children
+  return (
+    <div className="flex min-h-screen flex-col">
+      <div className="flex-1">{children}</div>
+      <SiteFooter />
+    </div>
+  )
 }
-

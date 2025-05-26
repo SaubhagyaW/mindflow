@@ -10,22 +10,24 @@ import { VoiceConversation } from "@/components/voice-conversation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { DashboardShell } from "@/components/dashboard-shell"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
-import { MessageSquare, ListChecks, Share2, Loader2, Plus, Trash2, Sparkles } from "lucide-react"
+import { SubscriptionStatus } from "@/components/subscription-status"
+import { MessageSquare, ListChecks, Loader2, Plus, Trash2, Edit } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ShareNoteDialog } from "@/components/share-note-dialog"
 import { EmailVerificationBanner } from "@/components/email-verification-banner"
+import { Input } from "@/components/ui/input"
 
 // Define Message type
 type Message = {
-  role: string;
-  content: string;
+  role: string
+  content: string
 }
 
 // Updated Conversation type with messages field instead of transcript
 type Conversation = {
   id: string
   title: string
-  messages: string | Message[] // Can be either string or array of Message objects
+  messages: string | Message[]
   audioUrl?: string | null
   createdAt: string
   updatedAt: string
@@ -46,10 +48,14 @@ type Note = {
   }
 }
 
-type Subscription = {
-  plan: string;
-  status: string;
-  currentPeriodEnd?: string;
+// Simplified subscription type for basic checks
+type SubscriptionData = {
+  plan: string
+  timeLimit: number
+  usedTime: number
+  remainingTime: number
+  isActive: boolean
+  expiresAt: string | null
 }
 
 export default function DashboardPage() {
@@ -60,17 +66,18 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("conversations")
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [notes, setNotes] = useState<Note[]>([])
-  const [userSubscription, setUserSubscription] = useState<Subscription | null>(null)
-  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true)
+  const [userSubscription, setUserSubscription] = useState<SubscriptionData | null>(null)
 
   // Add state for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null)
-  
+
+  // Add state for title editing
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
+  const [editedTitle, setEditedTitle] = useState("")
+
   // Check if user is on free plan or paid plan based on fetched subscription
-  const isPaidUser = session?.user && session.user.subscription && session.user.subscription.plan !== "free"
-  // Check if free user has reached conversation limit
-  const hasReachedLimit = !isPaidUser && conversations.length >= 3
+  const isPaidUser = userSubscription && userSubscription.plan !== "free"
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -79,39 +86,32 @@ export default function DashboardPage() {
     }
   }, [status, router])
 
-  // Fetch user subscription data separately
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      if (!session?.user?.id) return;
+  // Fetch basic subscription data for dashboard stats
+  const fetchBasicSubscription = async () => {
+    if (!session?.user?.id) return
 
-      setIsSubscriptionLoading(true);
-      try {
-        const response = await fetch(`/api/user/subscription?userId=${session.user.id}`, {
-          cache: "no-store",
-        });
+    try {
+      const response = await fetch("/api/user/subscription", {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
 
-        if (response.ok) {
-          const subscriptionData = await response.json();
-          console.log("Fetched subscription:", subscriptionData);
-          setUserSubscription(subscriptionData);
-        } else {
-          console.error("Failed to fetch subscription:", await response.json());
-          // Set default to free plan if fetch fails
-          setUserSubscription({ plan: "free", status: "active" });
-        }
-      } catch (error) {
-        console.error("Error fetching subscription:", error);
-        // Set default to free plan if fetch errors
-        setUserSubscription({ plan: "free", status: "active" });
-      } finally {
-        setIsSubscriptionLoading(false);
+      if (response.ok) {
+        const subscriptionData = await response.json()
+        setUserSubscription(subscriptionData)
       }
-    };
-
-    if (session?.user?.id) {
-      fetchSubscription();
+    } catch (error) {
+      console.error("Error fetching basic subscription data:", error)
     }
-  }, [session]);
+  }
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchBasicSubscription()
+    }
+  }, [session])
 
   // Fetch conversations and notes when session is available
   useEffect(() => {
@@ -120,30 +120,6 @@ export default function DashboardPage() {
     }
   }, [session])
 
-  // Automatically switch to conversations tab if free user tries to create more than 3 conversations
-  useEffect(() => {
-    if (hasReachedLimit && activeTab === "new") {
-      setActiveTab("conversations")
-      toast({
-        title: "Conversation limit reached",
-        description: "Free plan supports up to 3 conversations. Please upgrade for unlimited conversations.",
-        variant: "destructive",
-      })
-    }
-  }, [hasReachedLimit, activeTab, toast])
-
-  // Log session data to debug verification status
-  useEffect(() => {
-    if (session?.user) {
-      console.log("Session user data:", {
-        id: session.user.id,
-        email: session.user.email,
-        isVerified: session.user.isVerified,
-      })
-    }
-  }, [session])
-
-  // Fix the fetchData function to include proper null checks
   const fetchData = async () => {
     if (!session?.user?.id) return
 
@@ -152,6 +128,9 @@ export default function DashboardPage() {
       // Fetch conversations
       const conversationsResponse = await fetch(`/api/conversations?userId=${session.user.id}`, {
         cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
       })
 
       if (conversationsResponse.ok) {
@@ -165,6 +144,9 @@ export default function DashboardPage() {
       // Fetch notes
       const notesResponse = await fetch(`/api/notes?userId=${session.user.id}`, {
         cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
       })
 
       if (notesResponse.ok) {
@@ -203,7 +185,6 @@ export default function DashboardPage() {
         // Also remove any notes associated with this conversation
         setNotes(notes.filter((note) => note.conversationId !== conversationToDelete))
 
-        // Show success message with toast
         toast({
           title: "Conversation deleted",
           description: "The conversation has been successfully removed.",
@@ -220,45 +201,123 @@ export default function DashboardPage() {
       })
     } finally {
       setConversationToDelete(null)
+      setDeleteDialogOpen(false)
     }
+  }
+
+  // Handle title editing
+  const startEditingTitle = (id: string, currentTitle: string) => {
+    setEditingTitleId(id)
+    setEditedTitle(currentTitle)
+  }
+
+  const saveEditedTitle = async (id: string) => {
+    if (!editedTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "Title cannot be empty",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/conversations/${id}/update-title`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: editedTitle.trim() }),
+      })
+
+      if (response.ok) {
+        // Update local state
+        setConversations(conversations.map((conv) => (conv.id === id ? { ...conv, title: editedTitle.trim() } : conv)))
+
+        // Update notes that reference this conversation
+        setNotes(
+          notes.map((note) => {
+            if (note.conversationId === id && note.conversation) {
+              return {
+                ...note,
+                conversation: {
+                  ...note.conversation,
+                  title: editedTitle.trim(),
+                },
+              }
+            }
+            return note
+          }),
+        )
+
+        toast({
+          title: "Success",
+          description: "Conversation title updated",
+        })
+      } else {
+        throw new Error("Failed to update title")
+      }
+    } catch (error) {
+      console.error("Error updating title:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update the title. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setEditingTitleId(null)
+    }
+  }
+
+  const cancelEditingTitle = () => {
+    setEditingTitleId(null)
   }
 
   const getConversationPreview = (conversation: Conversation): string => {
-    if (typeof conversation.messages === 'string') {
-      return conversation.messages.substring(0, 200);
+    if (typeof conversation.messages === "string") {
+      return conversation.messages.substring(0, 200)
     } else if (Array.isArray(conversation.messages) && conversation.messages.length > 0) {
       // Filter out system messages
-      const filteredMessages = conversation.messages.filter(
-        (message) => message.role !== 'system'
-      );
-  
+      const filteredMessages = conversation.messages.filter((message) => message.role !== "system")
+
       // Take first 2-3 messages for the preview
-      const previewMessages = filteredMessages.slice(0, 3);
-      
+      const previewMessages = filteredMessages.slice(0, 3)
+
       // Format each message with proper attribution
-      const formattedPreview = previewMessages.map(message => {
-        const speaker = message.role === 'user' ? 'You' : 'AI';
-        // Truncate individual messages if too long
-        const content = message.content.length > 70 
-          ? `${message.content.substring(0, 70)}...` 
-          : message.content;
-          
-        return `${speaker}: ${content}`;
-      }).join('\n');
-      
+      const formattedPreview = previewMessages
+        .map((message) => {
+          const speaker = message.role === "user" ? "You" : "AI"
+          // Truncate individual messages if too long
+          const content = message.content.length > 70 ? `${message.content.substring(0, 70)}...` : message.content
+
+          return `${speaker}: ${content}`
+        })
+        .join("\n")
+
       // Ensure the overall preview isn't too long
-      return formattedPreview.length > 200 
-        ? `${formattedPreview.substring(0, 197)}...` 
-        : formattedPreview;
+      return formattedPreview.length > 200 ? `${formattedPreview.substring(0, 197)}...` : formattedPreview
     }
-    return "No content available";
+    return "No content available"
   }
-  
+
+  // Helper function to format time display (keeping minimal version for stats)
+  const formatTime = (seconds: number): string => {
+    if (!seconds && seconds !== 0) return "0h 0m"
+    
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
+    } else {
+      return `${minutes}m`
+    }
+  }
 
   let content
 
-  // Show loading state while checking authentication or loading subscription
-  if (status === "loading" || isLoading || isSubscriptionLoading) {
+  // Show loading state while checking authentication
+  if (status === "loading" || isLoading) {
     content = (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-2">
@@ -272,45 +331,23 @@ export default function DashboardPage() {
       <DashboardShell>
         <DashboardHeader heading="Dashboard" text="Manage your conversations and generated notes." />
 
-        {/* Make the verification banner more prominent */}
+        {/* Email verification banner */}
         {session.user && !session.user.isVerified && (
           <div className="mb-6">
             <EmailVerificationBanner />
           </div>
         )}
 
-        {/* Show upgrade banner for free users */}
-        {!isPaidUser && (
-          <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <Sparkles className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">Free Plan</h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>You're currently on the free plan which supports up to 3 conversations. 
-                     {hasReachedLimit ? " You've reached your limit." : ` You have ${3 - conversations.length} remaining.`}</p>
-                </div>
-                <div className="mt-3">
-                  <Button 
-                    variant="outline" 
-                    className="text-blue-700 bg-white border-blue-300 hover:bg-blue-50"
-                    onClick={() => router.push("/pricing")}
-                  >
-                    Upgrade to Premium
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Use the SubscriptionStatus component */}
+        <div className="mb-6">
+          <SubscriptionStatus />
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="conversations">Conversations</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
-            <TabsTrigger value="new" disabled={hasReachedLimit}>New Conversation</TabsTrigger>
+            <TabsTrigger value="new">New Conversation</TabsTrigger>
           </TabsList>
 
           <TabsContent value="conversations" className="space-y-4">
@@ -323,7 +360,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">{conversations.length}</div>
                   <p className="text-xs text-gray-500">
-                    {conversations.length === 0 ? "Start your first conversation" : `Conversations saved ${!isPaidUser ? `(${conversations.length}/3)` : ""}`}
+                    {conversations.length === 0 ? "Start your first conversation" : "Conversations saved"}
                   </p>
                 </CardContent>
               </Card>
@@ -341,16 +378,18 @@ export default function DashboardPage() {
               </Card>
               <Card className="bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-900">Shared Notes</CardTitle>
-                  <Share2 className="h-4 w-4 text-blue-600" />
+                  <CardTitle className="text-sm font-medium text-gray-900">Conversation Time</CardTitle>
+                  <MessageSquare className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{notes.filter((note) => note.isShared).length}</div>
-                  <p className="text-xs text-gray-500">
-                    {notes.filter((note) => note.isShared).length === 0
-                      ? "No notes shared yet"
-                      : "Notes shared with others"}
-                  </p>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {userSubscription
+                      ? userSubscription.remainingTime === -1
+                        ? "Unlimited"
+                        : formatTime(userSubscription.remainingTime)
+                      : "Loading..."}
+                  </div>
+                  <p className="text-xs text-gray-500">Remaining conversation time</p>
                 </CardContent>
               </Card>
             </div>
@@ -361,7 +400,44 @@ export default function DashboardPage() {
                   <Card key={conversation.id} className="bg-white hover:shadow-md transition-shadow">
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{conversation.title}</h3>
+                        {editingTitleId === conversation.id ? (
+                          <div className="flex items-center gap-2 w-full">
+                            <Input
+                              value={editedTitle}
+                              onChange={(e) => setEditedTitle(e.target.value)}
+                              className="text-lg font-semibold"
+                              placeholder="Enter conversation title"
+                              autoFocus
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => saveEditedTitle(conversation.id)}
+                              className="text-green-600"
+                            >
+                              Save
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={cancelEditingTitle} className="text-gray-500">
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-gray-900">{conversation.title}</h3>
+                            {isPaidUser && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-gray-400 hover:text-blue-600"
+                                onClick={() => startEditingTitle(conversation.id, conversation.title)}
+                                title="Edit Title"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex gap-2">
                           <Button
                             variant="ghost"
@@ -372,32 +448,38 @@ export default function DashboardPage() {
                           >
                             <MessageSquare className="h-4 w-4" />
                           </Button>
-                          {/* Only show delete button for paid users */}
-                          {isPaidUser && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-gray-500 hover:text-red-600"
-                              onClick={() => handleDeleteClick(conversation.id)}
-                              title="Delete Conversation"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                          {/* Show delete button for all users */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-500 hover:text-red-600"
+                            onClick={() => handleDeleteClick(conversation.id)}
+                            title="Delete Conversation"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 mb-4">
                         {new Date(conversation.createdAt).toLocaleDateString()}
                       </p>
                       <div className="text-gray-700 space-y-1.5 whitespace-pre-line">
-                        {getConversationPreview(conversation).split('\n').map((line, index) => (
-                          <div key={index} className={`text-sm ${
-                            line.startsWith('You:') ? 'text-blue-600 font-medium' : 
-                            line.startsWith('AI:') ? 'text-purple-600 font-medium' : ''
-                          }`}>
-                            {line}
-                          </div>
-                        ))}
+                        {getConversationPreview(conversation)
+                          .split("\n")
+                          .map((line, index) => (
+                            <div
+                              key={index}
+                              className={`text-sm ${
+                                line.startsWith("You:")
+                                  ? "text-blue-600 font-medium"
+                                  : line.startsWith("AI:")
+                                    ? "text-purple-600 font-medium"
+                                    : ""
+                              }`}
+                            >
+                              {line}
+                            </div>
+                          ))}
                       </div>
                     </div>
                   </Card>
@@ -408,11 +490,7 @@ export default function DashboardPage() {
                 <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
                 <p className="text-gray-500 mb-6">Start a new conversation to see it here.</p>
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white" 
-                  onClick={() => setActiveTab("new")}
-                  disabled={hasReachedLimit}
-                >
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setActiveTab("new")}>
                   <Plus className="h-4 w-4 mr-2" />
                   Start Conversation
                 </Button>
@@ -477,11 +555,7 @@ export default function DashboardPage() {
                 <ListChecks className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
                 <p className="text-gray-500 mb-6">Notes are automatically generated from your conversations.</p>
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white" 
-                  onClick={() => setActiveTab("new")}
-                  disabled={hasReachedLimit}
-                >
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setActiveTab("new")}>
                   <Plus className="h-4 w-4 mr-2" />
                   Start Conversation
                 </Button>
@@ -490,44 +564,17 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="new">
-            {hasReachedLimit ? (
-              <Card className="bg-white">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Conversation Limit Reached</CardTitle>
-                  <CardDescription className="text-gray-500">
-                    Free plan supports up to 3 conversations. Upgrade to premium for unlimited conversations.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Sparkles className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Upgrade to Premium</h3>
-                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                      As a premium user, you'll enjoy unlimited conversations, the ability to delete conversations, 
-                      and other exclusive features.
-                    </p>
-                    <Button 
-                      className="bg-blue-600 hover:bg-blue-700 text-white" 
-                      onClick={() => router.push("/pricing")}
-                    >
-                      View Pricing Plans
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-white">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Start a Voice Conversation</CardTitle>
-                  <CardDescription className="text-gray-500">
-                    Have a natural voice conversation with your AI brainstorming partner to develop your ideas.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <VoiceConversation onSave={fetchData} />
-                </CardContent>
-              </Card>
-            )}
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Start a Voice Conversation</CardTitle>
+                <CardDescription className="text-gray-500">
+                  Have a natural voice conversation with your AI brainstorming partner to develop your ideas.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <VoiceConversation onSave={fetchData} />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 

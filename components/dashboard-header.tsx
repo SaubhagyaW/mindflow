@@ -1,6 +1,7 @@
 import type React from "react"
+
 interface DashboardHeaderProps {
-  heading: string
+  heading: string | React.ReactNode // Changed from just string to string | React.ReactNode
   text?: string
   children?: React.ReactNode
 }
@@ -16,4 +17,3 @@ export function DashboardHeader({ heading, text, children }: DashboardHeaderProp
     </div>
   )
 }
-

@@ -41,6 +41,13 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
   const [connectionAttempts, setConnectionAttempts] = useState(0)
   const [status, setStatus] = useState<string>("idle")
 
+  const [conversationStartTime, setConversationStartTime] = useState<number | null>(null)
+  const [userSpeakingStartTime, setUserSpeakingStartTime] = useState<number | null>(null)
+  const [aiSpeakingStartTime, setAiSpeakingStartTime] = useState<number | null>(null)
+  const [totalUserSpeakingTime, setTotalUserSpeakingTime] = useState<number>(0)
+  const [totalAiSpeakingTime, setTotalAiSpeakingTime] = useState<number>(0)
+  const [totalConversationTime, setTotalConversationTime] = useState<number>(0)
+
   // Refs for WebRTC
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const dataChannelRef = useRef<RTCDataChannel | null>(null)
@@ -349,6 +356,9 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
     setIsUserSpeaking(false)
     setIsAiSpeaking(false)
     setStatus("idle")
+    setConversationStartTime(null)
+    setUserSpeakingStartTime(null)
+    setAiSpeakingStartTime(null)
   }
 
   // Initialize WebRTC connection
@@ -364,6 +374,11 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
     setIsConnecting(true)
     setConnectionError(null)
     setStatus("connecting")
+    setConversationStartTime(Date.now())
+    setTotalAiSpeakingTime(0)
+    setTotalUserSpeakingTime(0)
+    setTotalConversationTime(0)
+
 
     // Increment connection attempts
     setConnectionAttempts((prev) => prev + 1)
@@ -708,6 +723,7 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
         console.log("User speech started")
         setIsUserSpeaking(true)
         setStatus("user_speaking")
+        setUserSpeakingStartTime(Date.now())
         // Clear current transcript when user starts speaking
         currentTranscriptRef.current = "";
         break
@@ -716,6 +732,12 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
         console.log("User speech stopped")
         setIsUserSpeaking(false)
         setStatus("processing")
+
+        if (userSpeakingStartTime) {
+          const speakingDuration = (Date.now() - userSpeakingStartTime) / 1000 // in seconds
+          setTotalUserSpeakingTime((prev) => prev + speakingDuration)
+          setUserSpeakingStartTime(null)
+        }
         
         // Process any audio data we've collected (legacy support)
         if (audioBufferRef.current.length > 0) {
@@ -860,12 +882,21 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
         console.log("AI audio started")
         setIsAiSpeaking(true)
         setStatus("ai_speaking")
+        setAiSpeakingStartTime(Date.now())
         break
 
       case "audio_stopped":
         console.log("AI audio stopped")
         setIsAiSpeaking(false)
         setStatus("idle")
+
+        // ← NEW: Calculate and accumulate AI speaking time
+        if (aiSpeakingStartTime) {
+          const speakingDuration = (Date.now() - aiSpeakingStartTime) / 1000 // in seconds
+          setTotalAiSpeakingTime((prev) => prev + speakingDuration)
+          setAiSpeakingStartTime(null)
+        }
+
         break
 
       // case "response.created":
@@ -906,28 +937,7 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
         // We no longer need to manually store audio data as we're using the API's transcript
         break
 
-      // case "response.content_part.done":
-      //   console.log("Content part completed")
-      //   // // Check if this is an AI response that should be captured
-      //   // if (event.content_part && event.content_part.type === 'text' && event.content_part.text) {
-      //   //   console.log("AI RESPONSE DETECTED:", event.content_part.text);
-          
-      //   //   // Create a message object for the AI response
-      //   //   const assistantMessage = {
-      //   //     role: "assistant",
-      //   //     content: event.content_part.text
-      //   //   };
-          
-      //   //   // Add to messages array
-      //   //   console.log("Adding AI message to conversation:", assistantMessage);
-      //   //   messagesRef.current = [...messagesRef.current, assistantMessage];
-      //   //   setMessages(prevMessages => [...prevMessages, assistantMessage]);
-          
-      //   //   // Update transcript
-      //   //   completeTranscriptRef.current += `AI: ${event.content_part.text}\n\n`;
-      //   //   setFullTranscript(completeTranscriptRef.current);
-      //   // }
-      //   break
+     
 
       case "response.output_item.done":
         console.log("Output item completed")
@@ -945,8 +955,44 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
     }
   }
 
+
+    // ← NEW: Function to record conversation time
+  const recordTime = async () => {
+    if (!session?.user?.id) return
+
+    // Calculate final times
+    const finalConversationTime =
+      Math.ceil(
+        (totalConversationTime + (conversationStartTime ? (Date.now() - conversationStartTime) / 1000 : 0)) / 60,
+      ) * 60 // Round up to nearest minute
+
+    console.log(`Recording conversation time: ${finalConversationTime} seconds`)
+
+    try {
+      const response = await fetch("/api/user/record-time", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: session.user.id,
+          seconds: finalConversationTime,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to record time: ${response.status}`)
+      }
+
+      console.log("Successfully recorded conversation time")
+    } catch (error) {
+      console.error("Error recording conversation time:", error)
+    }
+  }
+
   // End conversation and save to database
   const endConversation = async () => {
+    await recordTime()
     // Always try to save, even if we think there's no conversation
     await saveConversation()
   }
@@ -1019,27 +1065,45 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
 
   // Update the saveConversation function to navigate to the conversations tab
   const saveConversation = async () => {
-    if (!session?.user?.id) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to save conversations.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsSaving(true)
-
     try {
-      // Generate a default title
+      // ← NEW: Calculate total conversation time if still active
+      if (conversationStartTime) {
+        const conversationDuration = (Date.now() - conversationStartTime) / 1000 // in seconds
+        setTotalConversationTime((prev) => prev + conversationDuration)
+        setConversationStartTime(null)
+      }
+  
+      // ← NEW: Add final user speaking time if still speaking
+      if (userSpeakingStartTime) {
+        const speakingDuration = (Date.now() - userSpeakingStartTime) / 1000
+        setTotalUserSpeakingTime((prev) => prev + speakingDuration)
+        setUserSpeakingStartTime(null)
+      }
+  
+      // ← NEW: Add final AI speaking time if still speaking
+      if (aiSpeakingStartTime) {
+        const speakingDuration = (Date.now() - aiSpeakingStartTime) / 1000
+        setTotalAiSpeakingTime((prev) => prev + speakingDuration)
+        setAiSpeakingStartTime(null)
+      }
+  
+      if (!session?.user?.id) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save conversations.",
+          variant: "destructive",
+        })
+        return
+      }
+  
+      setIsSaving(true)
+  
       const title = "Voice Conversation " + new Date().toLocaleString()
-
-      // Get the complete transcript
       const fullTranscriptText = completeTranscriptRef.current || "Voice conversation transcript"
-
-      console.log("Saving conversation with transcript:", fullTranscriptText);
-      console.log("Saving with messages:", messagesRef.current);
-
+  
+      console.log("Saving conversation with transcript:", fullTranscriptText)
+      console.log("Saving with messages:", messagesRef.current)
+  
       const saveResponse = await fetch("/api/conversations/save", {
         method: "POST",
         headers: {
@@ -1052,32 +1116,32 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
           userId: session.user.id,
         }),
       })
-
+  
       if (!saveResponse.ok) {
         const errorText = await saveResponse.text()
         throw new Error(`Failed to save conversation: ${errorText}`)
       }
-
+  
       const saveData = await saveResponse.json()
       console.log("Save successful, received data:", saveData)
-
+  
       if (saveData.conversation && saveData.conversation.id) {
         setConversationId(saveData.conversation.id)
         setSummary(saveData.note?.content || "")
         setActionItems(saveData.note?.actionItems || "")
-
+  
         toast({
           title: "Conversation saved",
           description: "Your conversation has been saved successfully.",
         })
-
+  
         if (onSave) {
           onSave()
         }
-
+  
         setShowSummary(true)
         cleanupConnection()
-
+  
         setTimeout(() => {
           router.push("/dashboard")
         }, 2000)
@@ -1095,6 +1159,7 @@ export function VoiceConversation({ onSave }: VoiceConversationProps) {
       setIsSaving(false)
     }
   }
+  
 
   // Render summary view
   if (showSummary) {

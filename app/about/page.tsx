@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 
 export const metadata: Metadata = {
   title: "About MindFlow",
@@ -12,45 +13,9 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <header className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/assets/png ai.png" alt="MindFlow Logo" width={40} height={40} className="h-16 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition">
-              Home
-            </Link>
-            <Link href="/about" className="text-blue-600 font-medium">
-              About
-            </Link>
-            <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
-              Services
-            </Link>
-            <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition">
-              Pricing
-            </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/sign-in">
-              <Button
-                variant="outline"
-                className="hidden md:inline-flex border-blue-600 text-blue-600 hover:bg-blue-50"
-              >
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/sign-up">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
-      <main className="flex-1">
+      <main className="flex-1 pt-24">
         {/* Hero Section */}
         <section className="bg-blue-50 py-20">
           <div className="container mx-auto px-4">
@@ -147,72 +112,7 @@ export default function AboutPage() {
         </section>
       </main>
 
-      <footer className="bg-blue-500 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Image
-                  src="/assets/png ai.png"
-                  alt="MindFlow Logo"
-                  width={24}
-                  height={24}
-                  className="h-16 w-auto rounded-2xl"
-                />
-              </div>
-              <p className="text-blue-100">AI-Powered Voice Brainstorming: Transform Ideas into Action with MindFlow</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-white">Product</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/services" className="text-blue-100 hover:text-white transition">
-                    Services
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="text-blue-100 hover:text-white transition">
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-white">Company</h3>
-              <ul className="space-y-2">
-                {/* <li>
-                  <Link href="/about" className="text-blue-100 hover:text-white transition">
-                    About
-                  </Link>
-                </li> */}
-                <li>
-                  <Link href="/contact" className="text-blue-100 hover:text-white transition">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            {/* <div>
-              <h3 className="text-lg font-semibold mb-4 text-white">Legal</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/privacy" className="text-blue-100 hover:text-white transition">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="text-blue-100 hover:text-white transition">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div> */}
-          </div>
-          <div className="border-t border-blue-700 mt-12 pt-8 text-center text-blue-100">
-            <p>&copy; {new Date().getFullYear()} MindFlow. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

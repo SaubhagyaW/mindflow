@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
+import { encrypt } from "@/lib/encryption"
 
 export const dynamic = "force-dynamic"
 
@@ -55,28 +56,49 @@ export async function POST(req: NextRequest) {
       messages = [{ role: "user", content: "Voice conversation" }],
     } = body
 
+    // Encrypt fields before saving
+    const encryptedTitle = encrypt(title)
+    const encryptedTranscript = encrypt(transcript)
+    const encryptedMessages = encrypt(JSON.stringify(messages))
+
     const conversation = await prisma.conversation.create({
       data: {
-        title,
-        transcript,
+        title: encryptedTitle,
+        transcript: encryptedTranscript,
         userId: session.user.id,
         audioUrl: null,
-        messages,
+        messages: encryptedMessages,
       },
     })
 
     const summaryData = await generateSummary(transcript)
 
+    const encryptedSummary = encrypt(summaryData.summary)
+    const encryptedActionItems = encrypt(summaryData.actionItems)
+
     const note = await prisma.note.create({
       data: {
-        content: summaryData.summary,
-        actionItems: summaryData.actionItems,
+        content: encryptedSummary,
+        actionItems: encryptedActionItems,
         userId: session.user.id,
         conversationId: conversation.id,
       },
     })
 
-    return NextResponse.json({ conversation, note }, { status: 201 })
+    // Return plain versions to client (optional, or return just `id`)
+    return NextResponse.json({
+      conversation: {
+        id: conversation.id,
+        title,
+        transcript,
+        messages,
+      },
+      note: {
+        id: note.id,
+        content: summaryData.summary,
+        actionItems: summaryData.actionItems,
+      },
+    }, { status: 201 })
   } catch (error) {
     console.error("Error saving conversation:", error)
     return NextResponse.json(

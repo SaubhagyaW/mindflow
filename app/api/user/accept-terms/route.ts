@@ -1,33 +1,37 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
 
-export const dynamic = "force-dynamic" // Ensure this route is not cached
-
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
+    // Get the current session
     const session = await getServerSession(authOptions)
 
+    // Check if the user is authenticated
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      console.error("User not authenticated")
+      return NextResponse.json({ error: "You must be signed in to accept terms" }, { status: 401 })
     }
 
-    console.log("Updating terms acceptance for user:", session.user.id)
+    const userId = session.user.id
 
-    // Update user to mark terms as accepted
+    console.log(`Updating terms acceptance for user ${userId}`)
+
+    // Update the user's hasAcceptedTerms field in the database
+    // Removed termsAcceptedAt field since it doesn't exist in the schema
     const updatedUser = await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
+      where: { id: userId },
       data: {
         hasAcceptedTerms: true,
       },
     })
 
-    console.log("Terms acceptance updated:", updatedUser.hasAcceptedTerms)
+    console.log(`Terms acceptance updated successfully for user ${userId}`)
 
+    // Return success response
     return NextResponse.json({
+      success: true,
       message: "Terms accepted successfully",
       user: {
         id: updatedUser.id,
@@ -35,8 +39,7 @@ export async function POST(req: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Terms acceptance error:", error)
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
+    console.error("Error accepting terms:", error)
+    return NextResponse.json({ error: "Failed to accept terms. Please try again." }, { status: 500 })
   }
 }
-

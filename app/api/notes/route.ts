@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/db"
+import { encrypt, decrypt } from "@/lib/encryption"
 
 export const dynamic = "force-dynamic" // Ensure this route is not cached
 
@@ -32,7 +33,18 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(notes)
+    // Decrypt content, actionItems, AND conversation title
+    const decryptedNotes = notes.map(note => ({
+      ...note,
+      content: decrypt(note.content),
+      actionItems: decrypt(note.actionItems ?? ""),
+      conversation: note.conversation ? {
+        ...note.conversation,
+        title: decrypt(note.conversation.title)
+      } : null
+    }))
+
+    return NextResponse.json(decryptedNotes)
   } catch (error) {
     console.error("Error fetching notes:", error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
@@ -43,10 +55,13 @@ export async function POST(req: NextRequest) {
   try {
     const { content, actionItems, userId, conversationId, isShared } = await req.json()
 
+    const encryptedContent = encrypt(content)
+    const encryptedActionItems = encrypt(actionItems)
+
     const note = await prisma.note.create({
       data: {
-        content,
-        actionItems,
+        content: encryptedContent,
+        actionItems: encryptedActionItems,
         isShared: isShared || false,
         userId,
         conversationId,
@@ -59,4 +74,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
-

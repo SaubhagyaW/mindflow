@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
 import { sendNoteShareEmail, simulateWhatsAppShare } from "@/lib/email"
+import { decrypt } from "@/lib/encryption"
 
 export const dynamic = "force-dynamic" // Ensure this route is not cached
 
@@ -53,6 +54,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: "Sharing is only available for paid plans" }, { status: 403 })
     }
 
+    // Decrypt note content and action items
+    const decryptedContent = decrypt(note.content)
+    const decryptedActionItems = note.actionItems ? decrypt(note.actionItems) : ""
+
+    const fullMessage = `${decryptedContent}${decryptedActionItems ? `\n\nAction Items:\n${decryptedActionItems}` : ""}`
+    const noteTitle = note.conversation.title || "Untitled Note"
+
     // Update note to mark as shared
     await prisma.note.update({
       where: {
@@ -65,22 +73,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     // Share the note based on the method
     let shareResponse
-    const noteTitle = note.conversation.title || "Untitled Note"
 
     if (method === "email") {
-      // Share via email
-      shareResponse = await sendNoteShareEmail(
-        recipient,
-        note.content + (note.actionItems ? `\n\nAction Items:\n${note.actionItems}` : ""),
-        noteTitle,
-      )
+      shareResponse = await sendNoteShareEmail(recipient, fullMessage, noteTitle)
     } else if (method === "whatsapp") {
-      // Share via WhatsApp (simulated for demo)
-      shareResponse = await simulateWhatsAppShare(
-        recipient,
-        note.content + (note.actionItems ? `\n\nAction Items:\n${note.actionItems}` : ""),
-        noteTitle,
-      )
+      shareResponse = await simulateWhatsAppShare(recipient, fullMessage, noteTitle)
     } else {
       return NextResponse.json({ error: "Invalid sharing method" }, { status: 400 })
     }

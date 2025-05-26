@@ -1,19 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-export const dynamic = "force-dynamic" // Ensure this route is not cached
-
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "You must be logged in to access this endpoint" }, { status: 401 })
     }
 
-    // Fetch user profile with subscription and verification status
     const user = await prisma.user.findUnique({
       where: {
         id: session.user.id,
@@ -22,12 +19,15 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         email: true,
-        isVerified: true,
         createdAt: true,
+        hasAcceptedTerms: true, // Use hasAcceptedTerms instead of isVerified
         subscription: {
           select: {
+            id: true,
             plan: true,
-            // Remove createdAt if it doesn't exist in your schema
+            createdAt: true,
+            startDate: true,
+            endDate: true,
           },
         },
       },
@@ -40,6 +40,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ user })
   } catch (error) {
     console.error("Error fetching user profile:", error)
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 })
   }
 }

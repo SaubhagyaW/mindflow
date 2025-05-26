@@ -1,57 +1,60 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
+import { type NextRequest, NextResponse } from "next/server"
 
-export async function middleware(request: NextRequest) {
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  })
+export async function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname
 
-  // Define protected routes that require authentication
-  const protectedRoutes = [
-    "/dashboard",
-    "/dashboard/conversations",
-    "/dashboard/notes",
-    "/dashboard/settings",
-    "/dashboard/profile",
-    "/dashboard/billing",
-  ]
+  // Define public paths that don't require authentication
+  const isPublicPath =
+    path === "/" ||
+    path === "/sign-in" ||
+    path === "/sign-up" ||
+    path === "/api/auth" ||
+    path === "/terms" ||
+    path === "/privacy" ||
+    path === "/about" ||
+    path === "/contact" ||
+    path === "/services" ||
+    path === "/return-policy" ||
+    path === "/check-email" ||
+    path === "/verify-email" ||
+    path === "/api/health" ||
+    path.startsWith("/api/auth/") ||
+    path.startsWith("/pricing") || // Allow pricing page without login
+    path.startsWith("/api/payments/payhere/") // Allow PayHere endpoints without login
 
-  // Check if the current path is a protected route
-  const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+  // Define protected paths that require authentication
+  const isProtectedPath = path === "/dashboard" || path.startsWith("/dashboard/") || path === "/accept-terms"
 
-  // Redirect to sign-in if accessing a protected route without being authenticated
-  if (isProtectedRoute && !token) {
-    const signInUrl = new URL("/sign-in", request.url)
-    signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname)
-    return NextResponse.redirect(signInUrl)
+  const token = await getToken({ req })
+
+  // Redirect to sign-in if trying to access a protected route without being authenticated
+  if (isProtectedPath && !token) {
+    return NextResponse.redirect(new URL("/sign-in", req.url))
   }
 
-  // Redirect to terms page if user is authenticated but hasn't accepted terms
-  // Only for dashboard routes, not services
-  if (isProtectedRoute && token && token.hasAcceptedTerms === false) {
-    // Don't redirect if already on the terms page
-    if (!request.nextUrl.pathname.startsWith("/terms")) {
-      // Store the intended destination to redirect back after accepting terms
-      const termsUrl = new URL("/terms", request.url)
-      termsUrl.searchParams.set("callbackUrl", request.nextUrl.pathname)
-      return NextResponse.redirect(termsUrl)
-    }
+  // Redirect to dashboard if already authenticated and trying to access auth pages
+  if ((path === "/sign-in" || path === "/sign-up") && token) {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
   }
 
-  // Redirect to dashboard if accessing auth pages while already authenticated
-  const authRoutes = ["/sign-in", "/sign-up"]
-  const isAuthRoute = authRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
-
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+  // Redirect to accept-terms if authenticated but terms not accepted
+  if (token && !token.hasAcceptedTerms && path !== "/accept-terms" && isProtectedPath) {
+    return NextResponse.redirect(new URL("/accept-terms", req.url))
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/sign-in", "/sign-up", "/terms"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|public|assets).*)",
+  ],
 }
-

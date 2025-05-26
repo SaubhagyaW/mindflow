@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
           password: string
           isVerified: boolean
           hasAcceptedTerms: boolean
-          subscription?: { plan: string }
+          subscription?: { plan: string; status: string; currentPeriodEnd?: string }
         }
 
         // Compare password
@@ -62,7 +62,13 @@ export const authOptions: NextAuthOptions = {
           email: typedUser.email,
           hasAcceptedTerms: typedUser.hasAcceptedTerms,
           isVerified: typedUser.isVerified, // Include isVerified status
-          subscription: typedUser.subscription,
+          subscription: typedUser.subscription
+            ? {
+                plan: typedUser.subscription.plan,
+                status: "active", // Replace with actual status if available
+                currentPeriodEnd: undefined, // Replace with actual value if available
+              }
+            : undefined,
         }
       },
     }),
@@ -105,7 +111,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string
         session.user.hasAcceptedTerms = token.hasAcceptedTerms as boolean
         session.user.isVerified = token.isVerified as boolean // Add isVerified to session
-        session.user.subscription = token.subscription as { plan: string } | undefined
+        session.user.subscription = token.subscription as { plan: string; status: string; currentPeriodEnd?: string | undefined } | undefined
       }
       return session
     },
