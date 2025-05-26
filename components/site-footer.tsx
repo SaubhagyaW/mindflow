@@ -52,11 +52,11 @@ export function SiteFooter() {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Company</h3>
             <ul className="space-y-2">
-              <li>
+              {/* <li>
                 <Link href="/about" className="text-blue-100 hover:text-white transition">
                   About
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/contact" className="text-blue-100 hover:text-white transition">
                   Contact

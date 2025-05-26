@@ -29,9 +29,9 @@ export function SiteHeader() {
           <Link href="/" className="text-gray-700 hover:text-blue-600 transition">
             Home
           </Link>
-          <Link href="/about" className="text-gray-700 hover:text-blue-600 transition">
+          {/* <Link href="/about" className="text-gray-700 hover:text-blue-600 transition">
             About
-          </Link>
+          </Link> */}
           <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
             Services
           </Link>

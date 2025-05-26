@@ -92,7 +92,7 @@ export default function ServicesPage() {
             <SiteHeader/>
 
             <main className="flex-1 container mx-auto px-4 py-8 pt-24">
-                <h1 className="text-3xl font-bold mb-8 text-gray-900">AI Voice Brainstorming</h1>
+                <h1 className="text-3xl font-bold mb-8 mt-16 text-gray-900">AI Voice Brainstorming</h1>
 
                 {isAuthenticated ? (
                     // Content for authenticated users
@@ -292,34 +292,34 @@ export default function ServicesPage() {
                                 <div className="bg-white p-4 rounded-lg border-2 border-blue-600">
                                     <div className="flex justify-between items-center mb-2">
                                         <h3 className="font-medium text-gray-900">Pro Plan</h3>
-                                        <span className="text-lg font-bold text-gray-900">Starting at $30/mo</span>
+                                        <span className="text-lg font-bold text-gray-900">Starting at $11/mo</span>
                                     </div>
                                     <p className="text-sm text-gray-500 mb-3">For serious brainstormers</p>
                                     <div className="space-y-3">
                                         <div className="text-sm">
                                             <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                                <span className="text-gray-700">2 hours</span>
+                                                <div className="text-right">
+                                                    <div className="text-gray-600">Monthly: $15</div>
+                                                    <div className="text-blue-600 font-medium">Annual: $11</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-sm">
+                                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                                <span className="text-gray-700">5 hours</span>
+                                                <div className="text-right">
+                                                    <div className="text-gray-600">Monthly: $19</div>
+                                                    <div className="text-blue-600 font-medium">Annual: $15</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-sm">
+                                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
                                                 <span className="text-gray-700">10 hours</span>
                                                 <div className="text-right">
-                                                    <div className="text-gray-600">Monthly: $35</div>
-                                                    <div className="text-blue-600 font-medium">Annual: $30</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-sm">
-                                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                                <span className="text-gray-700">20 hours</span>
-                                                <div className="text-right">
-                                                    <div className="text-gray-600">Monthly: $49</div>
-                                                    <div className="text-blue-600 font-medium">Annual: $45</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-sm">
-                                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                                <span className="text-gray-700">30 hours</span>
-                                                <div className="text-right">
-                                                    <div className="text-gray-600">Monthly: $64</div>
-                                                    <div className="text-blue-600 font-medium">Annual: $60</div>
+                                                    <div className="text-gray-600">Monthly: $25</div>
+                                                    <div className="text-blue-600 font-medium">Annual: $22</div>
                                                 </div>
                                             </div>
                                         </div>
