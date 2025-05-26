@@ -127,7 +127,7 @@ export function PayHereButton({
         
         return_url: `${window.location.origin}/api/payments/payhere/success?orderId=${orderId}`,
         cancel_url: `${window.location.origin}/api/payments/payhere/cancel?orderId=${orderId}`,
-        notify_url: `https://www.mind-flow.ai/api/payments/payhere/notify`,
+        notify_url: `${window.location.origin}/api/payments/payhere/notify`,
         order_id: orderId,
         items: itemName,
         amount: formattedAmount,
