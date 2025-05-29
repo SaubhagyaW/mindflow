@@ -29,7 +29,7 @@ export function getPlanTimeLimit(plan: string): number {
       return 60 * 30 // Default to 30 mins (Free plan)
   }
 
-  // // DEV
+  // DEV
   // switch (plan) {
   //   case "free":
   //     return 60 * 5 // 5 mins
