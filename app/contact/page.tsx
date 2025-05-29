@@ -53,13 +53,13 @@ export default function ContactPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-start gap-4">
+                                    {/* <div className="flex items-start gap-4">
                                         <div className="bg-blue-100 p-3 rounded-full">
                                             <Phone className="h-6 w-6 text-blue-600"/>
                                         </div>
                                         <div>
                                             <h3 className="font-medium text-gray-900">Phone</h3>
-                                            <p className="text-gray-600">+94 (77) 550 7622</p>
+                                            <p className="text-gray-600">+94 (77) 550 7684</p>
                                         </div>
                                     </div>
 
@@ -69,10 +69,10 @@ export default function ContactPage() {
                                         </div>
                                         <div>
                                             <h3 className="font-medium text-gray-900">Office</h3>
-                                            <p className="text-gray-600">225, Sama Mawatha, Battaramulla, Sri
+                                            <p className="text-gray-600">1200/4, Rajamalwatta Road, Battaramulla, Sri
                                                 Lanka</p>
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
