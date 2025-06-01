@@ -20,6 +20,20 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+            {/* Google Analytics */}
+            <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZCFT24PQEB"></script>
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-ZCFT24PQEB');
+            `,
+                }}
+            />
+            
+            {/* PayHere */}
       <script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
       </head>
       <body className={inter.className}>
@@ -33,4 +47,3 @@ export default function RootLayout({
     </html>
   )
 }
-
