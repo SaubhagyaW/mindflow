@@ -122,7 +122,7 @@ export function PayHereButton({
 
       // Set up payment object exactly as in PayHere docs
       const payment = {
-        sandbox: true, // Always use true for testing
+        sandbox: false, // Always use true for testing
         merchant_id: process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID,
         
         return_url: `${window.location.origin}/api/payments/payhere/success?orderId=${orderId}`,
