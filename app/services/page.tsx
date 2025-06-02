@@ -8,7 +8,7 @@ import Head from "next/head"
 import { VoiceConversation } from "@/components/voice-conversation"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Brain, Loader2, Plus, Zap, Target, Mic, MessageSquare, ArrowRight } from "lucide-react"
+import { Brain, Loader2, Plus, Zap, Target, Mic, MessageSquare, ArrowRight, Share2 } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 
@@ -31,12 +31,15 @@ export default function ServicesPage() {
   const [activeTab, setActiveTab] = useState("new")
 
   useEffect(() => {
+    // Only show loading state briefly
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 500)
+
     return () => clearTimeout(timer)
   }, [])
 
+  // Fetch conversations when session is available
   useEffect(() => {
     if (session?.user?.id) {
       fetchConversations()
@@ -47,19 +50,24 @@ export default function ServicesPage() {
     if (!session?.user?.id) return
 
     try {
+      console.log("Fetching conversations for user:", session.user.id)
       const response = await fetch(`/api/conversations?userId=${session.user.id}`, {
-        cache: "no-store",
+        cache: "no-store", // Next.js 15 explicit no caching
       })
 
       if (response.ok) {
         const data = await response.json()
+        console.log("Fetched conversations:", data)
         setConversations(data as Conversation[])
+      } else {
+        console.error("Failed to fetch conversations:", await response.json())
       }
     } catch (error) {
       console.error("Error fetching conversations:", error)
     }
   }
 
+  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -71,7 +79,12 @@ export default function ServicesPage() {
     )
   }
 
+  // Determine if user is authenticated
   const isAuthenticated = status === "authenticated"
+
+  const handleStartConversation = () => {
+    setActiveTab("new")
+  }
 
   return (
     <>
@@ -88,295 +101,299 @@ export default function ServicesPage() {
       <div className="flex flex-col min-h-screen bg-white">
         <SiteHeader />
 
-        <main className="flex-1 pt-24">
-          {/* Clean Hero Section */}
-          <section className="bg-gradient-to-b from-white to-blue-50 py-16">
-            <div className="container mx-auto px-4 text-center">
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                AI-Powered <span className="text-blue-600">Brainstorming</span>
-              </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                Experience the future of ideation with MindFlow's advanced <strong>brainstorming AI platform</strong>. 
-                Transform voice conversations into organized ideas and actionable insights.
-              </p>
-              
-              {!isAuthenticated && (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                  <Link href="/sign-up">
-                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4">
-                      Start Free AI Brainstorming <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
-                  <Link href="/pricing">
-                    <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4">
-                      View Pricing
-                    </Button>
-                  </Link>
-                </div>
-              )}
+        <main className="flex-1 container mx-auto px-4 py-12 pt-32">
+          {/* Hero Section for AI Brainstorming Services */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Professional <span className="text-blue-600">AI Brainstorming Services</span>
+            </h1>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
+              Experience the future of ideation with MindFlow's advanced <strong>brainstorming AI platform</strong>. 
+              Our ChatGPT-powered voice assistant transforms natural conversations into organized ideas, 
+              structured notes, and actionable insights—revolutionizing how professionals approach creative problem-solving.
+            </p>
+            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">
+              <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                <Brain className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-gray-900 mb-2">Intelligent AI Conversations</h3>
+                <p className="text-gray-600 text-sm">Engage with our brainstorming AI for natural, productive ideation sessions</p>
+              </div>
+              <div className="bg-green-50 p-6 rounded-xl border border-green-100">
+                <Zap className="h-8 w-8 text-green-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-gray-900 mb-2">Real-Time Organization</h3>
+                <p className="text-gray-600 text-sm">Watch ideas transform into structured plans automatically</p>
+              </div>
+              <div className="bg-purple-50 p-6 rounded-xl border border-purple-100">
+                <Target className="h-8 w-8 text-purple-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-gray-900 mb-2">Actionable Results</h3>
+                <p className="text-gray-600 text-sm">Generate concrete next steps from every brainstorming AI session</p>
+              </div>
             </div>
-          </section>
+          </div>
 
-          {/* Main Content Area */}
-          <section className="py-16">
-            <div className="container mx-auto px-4">
-              {isAuthenticated ? (
-                // Authenticated User Experience
-                <div className="max-w-4xl mx-auto">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <div className="flex justify-center mb-8">
-                      <TabsList className="bg-gray-100 p-1 rounded-lg">
-                        <TabsTrigger value="new" className="px-6 py-2">New AI Session</TabsTrigger>
-                        <TabsTrigger value="history" className="px-6 py-2">Your Sessions</TabsTrigger>
-                      </TabsList>
-                    </div>
-
-                    <TabsContent value="new" className="mt-0">
-                      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                        <div className="text-center mb-8">
-                          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                            <Brain className="h-8 w-8 text-blue-600" />
-                          </div>
-                          <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                            Start AI Brainstorming Session
-                          </h2>
-                          <p className="text-gray-600 max-w-2xl mx-auto">
-                            Engage in natural voice conversations with our ChatGPT-powered brainstorming AI. 
-                            Speak your ideas and watch them transform into organized action plans.
-                          </p>
-                        </div>
-                        <VoiceConversation onSave={fetchConversations} />
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="history" className="mt-0">
-                      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                        <div className="flex items-center gap-3 mb-6">
-                          <MessageSquare className="h-6 w-6 text-blue-600" />
-                          <h2 className="text-2xl font-bold text-gray-900">Your AI Sessions</h2>
-                        </div>
-
-                        {conversations.length > 0 ? (
-                          <div className="grid gap-4">
-                            {conversations.slice(0, 6).map((conversation) => (
-                              <div
-                                key={conversation.id}
-                                className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-all cursor-pointer hover:border-blue-300"
-                                onClick={() => router.push(`/dashboard/conversations/${conversation.id}`)}
-                              >
-                                <div className="flex justify-between items-start mb-2">
-                                  <h3 className="font-semibold text-gray-900">{conversation.title}</h3>
-                                  <span className="text-sm text-gray-500">
-                                    {new Date(conversation.createdAt).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                <p className="text-gray-600 text-sm line-clamp-2">
-                                  {conversation.transcript.substring(0, 150)}...
-                                </p>
-                              </div>
-                            ))}
-                            {conversations.length > 6 && (
-                              <div className="text-center pt-4">
-                                <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                                  View All Sessions
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-center py-12">
-                            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                              <Brain className="h-8 w-8 text-gray-400" />
-                            </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">
-                              No AI Sessions Yet
-                            </h3>
-                            <p className="text-gray-500 mb-6">
-                              Start your first brainstorming AI conversation to see sessions here.
-                            </p>
-                            <Button onClick={() => setActiveTab("new")} className="bg-blue-600 hover:bg-blue-700">
-                              <Plus className="h-4 w-4 mr-2" />
-                              Start First Session
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              ) : (
-                // Non-authenticated User Experience
-                <div className="max-w-6xl mx-auto">
-                  <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    {/* Features Column */}
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                        Why Choose Our <span className="text-blue-600">Brainstorming AI</span>?
+          {isAuthenticated ? (
+            // Content for authenticated users - App Interface
+            <div className="max-w-6xl mx-auto">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-8 max-w-md mx-auto">
+                  <TabsTrigger value="new">New Session</TabsTrigger>
+                  <TabsTrigger value="history">History</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="new" className="space-y-8">
+                  <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 max-w-4xl mx-auto">
+                    <div className="text-center mb-6">
+                      <Mic className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                      <h2 className="text-2xl font-semibold mb-4 text-gray-900">
+                        Start Your AI Brainstorming Session
                       </h2>
-                      <div className="space-y-6">
-                        <div className="flex gap-4">
-                          <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Brain className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-2">
-                              ChatGPT-Powered Intelligence
-                            </h3>
-                            <p className="text-gray-600">
-                              Experience natural conversations with our advanced brainstorming AI that understands 
-                              context and builds on your ideas intelligently.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                          <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <Mic className="h-6 w-6 text-green-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-2">
-                              Voice-First Experience
-                            </h3>
-                            <p className="text-gray-600">
-                              Speak naturally and receive intelligent responses. Our AI brainstorming platform 
-                              transcribes and organizes everything automatically.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                          <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <Target className="h-6 w-6 text-purple-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-2">
-                              Automated Organization
-                            </h3>
-                            <p className="text-gray-600">
-                              Transform chaotic brainstorming into structured plans. Our AI generates summaries, 
-                              action items, and shareable reports instantly.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-8">
-                        <Link href="/sign-up">
-                          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                            Try Brainstorming AI Free
-                          </Button>
-                        </Link>
-                      </div>
+                      <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                        Begin a natural voice conversation with our brainstorming AI. Speak your ideas 
+                        and watch as our assistant helps develop and organize your thoughts.
+                      </p>
+                    </div>
+                    <VoiceConversation onSave={fetchConversations} />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="history">
+                  <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 max-w-4xl mx-auto">
+                    <div className="flex items-center gap-3 mb-6">
+                      <MessageSquare className="h-8 w-8 text-blue-600" />
+                      <h2 className="text-2xl font-semibold text-gray-900">Your Brainstorming Sessions</h2>
                     </div>
 
-                    {/* Pricing Column */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                        AI Brainstorming Plans
-                      </h3>
-                      
+                    {conversations && conversations.length > 0 ? (
                       <div className="space-y-4">
-                        {/* Free Plan */}
-                        <div className="bg-white rounded-xl p-6 border border-gray-200">
-                          <div className="flex justify-between items-center mb-3">
-                            <h4 className="font-semibold text-gray-900">Free Plan</h4>
-                            <span className="text-2xl font-bold text-gray-900">$0</span>
-                          </div>
-                          <p className="text-gray-600 text-sm mb-4">Perfect for trying AI brainstorming</p>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>30 minutes of AI brainstorming</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>Voice conversations with AI</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>Automated transcription</span>
-                            </li>
-                          </ul>
-                        </div>
-
-                        {/* Pro Plans */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-blue-600">
-                          <div className="flex justify-between items-center mb-3">
-                            <h4 className="font-semibold text-gray-900">Pro Plans</h4>
-                            <span className="text-2xl font-bold text-blue-600">From $11/mo</span>
-                          </div>
-                          <p className="text-gray-600 text-sm mb-4">Unlimited AI brainstorming sessions</p>
-                          <div className="grid grid-cols-3 gap-2 text-xs mb-4">
-                            <div className="text-center p-2 bg-gray-50 rounded">
-                              <div className="font-medium">2h Plan</div>
-                              <div className="text-blue-600">$11/mo</div>
+                        {conversations.map((conversation) => (
+                          <div
+                            key={conversation.id}
+                            className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => router.push(`/dashboard/conversations/${conversation.id}`)}
+                          >
+                            <div className="flex justify-between items-start mb-3">
+                              <h3 className="font-semibold text-gray-900 text-lg">{conversation.title}</h3>
+                              <span className="text-sm text-gray-500">
+                                {new Date(conversation.createdAt).toLocaleDateString()}
+                              </span>
                             </div>
-                            <div className="text-center p-2 bg-gray-50 rounded">
-                              <div className="font-medium">5h Plan</div>
-                              <div className="text-blue-600">$15/mo</div>
-                            </div>
-                            <div className="text-center p-2 bg-gray-50 rounded">
-                              <div className="font-medium">10h Plan</div>
-                              <div className="text-blue-600">$22/mo</div>
+                            <p className="text-gray-700 line-clamp-3 mb-3">
+                              {conversation.transcript.substring(0, 200)}...
+                            </p>
+                            <div className="flex items-center gap-2 text-blue-600">
+                              <Brain className="h-4 w-4" />
+                              <span className="text-sm font-medium">AI Session</span>
                             </div>
                           </div>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>Everything in Free</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>Share notes via email/WhatsApp</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>Advanced conversation management</span>
-                            </li>
-                          </ul>
-                        </div>
+                        ))}
                       </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <Brain className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                        <h3 className="text-xl font-medium text-gray-900 mb-3">
+                          No Sessions Yet
+                        </h3>
+                        <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                          Start your first brainstorming conversation to see sessions appear here.
+                        </p>
+                        <Button
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={handleStartConversation}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Start Now
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          ) : (
+            // Content for non-authenticated users - Educational & Value-focused
+            <div className="space-y-16">
+              {/* How It Works Section */}
+              <section className="max-w-6xl mx-auto">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold mb-4 text-gray-900">
+                    How Our <span className="text-blue-600">Brainstorming AI</span> Works
+                  </h2>
+                  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Experience a revolutionary approach to ideation with our step-by-step AI-powered process
+                  </p>
+                </div>
+                
+                <div className="grid md:grid-cols-4 gap-8">
+                  <div className="text-center">
+                    <div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Speak Naturally</h3>
+                    <p className="text-gray-600 text-sm">
+                      Start a voice conversation with our AI. No scripts needed—just talk about your ideas, challenges, or goals.
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-green-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
+                    <h3 className="font-semibold text-gray-900 mb-3">AI Engages</h3>
+                    <p className="text-gray-600 text-sm">
+                      Our brainstorming AI asks insightful questions, builds on your ideas, and provides creative suggestions in real-time.
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Auto-Organize</h3>
+                    <p className="text-gray-600 text-sm">
+                      Watch as the AI automatically transcribes, categorizes, and structures your conversation into clear insights.
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-orange-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">4</div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Take Action</h3>
+                    <p className="text-gray-600 text-sm">
+                      Receive formatted summaries, action plans, and shareable notes that turn ideas into executable strategies.
+                    </p>
+                  </div>
+                </div>
+              </section>
 
-                      <div className="mt-6 text-center">
-                        <Link href="/pricing">
-                          <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
-                            View All Plans
-                          </Button>
-                        </Link>
+
+
+              {/* Benefits Section */}
+              <section className="max-w-6xl mx-auto">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold mb-4 text-gray-900">
+                    Why Choose AI-Powered <span className="text-blue-600">Brainstorming</span>?
+                  </h2>
+                  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Discover the competitive advantages of integrating artificial intelligence into your creative process
+                  </p>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-8 mb-12">
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-blue-100 p-3 rounded-full flex-shrink-0">
+                        <Brain className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Unlimited Creative Energy</h3>
+                        <p className="text-gray-600 text-sm">
+                          Never hit creative blocks again. Our AI provides fresh perspectives and infinite idea generation capabilities, available 24/7.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-4">
+                      <div className="bg-green-100 p-3 rounded-full flex-shrink-0">
+                        <Zap className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">10x Faster Ideation</h3>
+                        <p className="text-gray-600 text-sm">
+                          Accelerate your creative process with instant AI responses and automatic organization that saves hours of manual work.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-4">
+                      <div className="bg-purple-100 p-3 rounded-full flex-shrink-0">
+                        <Target className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Zero Ideas Lost</h3>
+                        <p className="text-gray-600 text-sm">
+                          Perfect transcription and intelligent categorization ensure every brilliant thought is captured and easily retrievable.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-orange-100 p-3 rounded-full flex-shrink-0">
+                        <MessageSquare className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Natural Conversation Flow</h3>
+                        <p className="text-gray-600 text-sm">
+                          Voice-first interface feels like talking to a creative partner, not operating software. Think out loud naturally.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-4">
+                      <div className="bg-teal-100 p-3 rounded-full flex-shrink-0">
+                        <Mic className="h-6 w-6 text-teal-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Hands-Free Creativity</h3>
+                        <p className="text-gray-600 text-sm">
+                          Brainstorm while walking, driving, or anywhere. No keyboards, no screens—just pure creative conversation.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-4">
+                      <div className="bg-pink-100 p-3 rounded-full flex-shrink-0">
+                        <Share2 className="h-6 w-6 text-pink-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Instant Team Sharing</h3>
+                        <p className="text-gray-600 text-sm">
+                          Share AI-generated summaries and action plans with your team via email or WhatsApp in one click.
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          </section>
+              </section>
 
-          {/* Trust Signals Section */}
-          <section className="bg-gray-50 py-16">
-            <div className="container mx-auto px-4 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8">
-                Trusted by Professionals Worldwide
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-                <div>
-                  <div className="text-3xl font-bold text-blue-600">10K+</div>
-                  <div className="text-gray-600">AI Sessions</div>
+              {/* Trust Signals Section */}
+              <section className="py-16 bg-white">
+                <div className="max-w-6xl mx-auto text-center">
+                  <h3 className="text-2xl font-semibold mb-8 text-gray-900">
+                    Trusted by Professionals Worldwide
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600">10K+</div>
+                      <div className="text-gray-600">AI Sessions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">500K+</div>
+                      <div className="text-gray-600">Ideas Generated</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-600">4.9/5</div>
+                      <div className="text-gray-600">User Rating</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-600">99.9%</div>
+                      <div className="text-gray-600">Uptime</div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-3xl font-bold text-green-600">500K+</div>
-                  <div className="text-gray-600">Ideas Generated</div>
+              </section>
+
+              {/* CTA Section */}
+              <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16 -mx-4 rounded-xl">
+                <div className="max-w-4xl mx-auto px-4 text-center">
+                  <h2 className="text-3xl font-bold mb-6">
+                    Ready to Transform Your Brainstorming Process?
+                  </h2>
+                  <p className="text-xl mb-8 opacity-90">
+                    Join thousands of innovators who are already using AI to accelerate their creative workflows
+                  </p>
+                  <div className="flex justify-center">
+                    <Link href="/sign-up">
+                      <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
+                        Start Free Trial <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-3xl font-bold text-purple-600">4.9/5</div>
-                  <div className="text-gray-600">User Rating</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-orange-600">99.9%</div>
-                  <div className="text-gray-600">Uptime</div>
-                </div>
-              </div>
+              </section>
             </div>
-          </section>
+          )}
         </main>
 
         <SiteFooter />
