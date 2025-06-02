@@ -16,14 +16,14 @@ import html from "remark-html"
 // Function to read and process markdown files
 async function getMarkdownContent(filename: string) {
   const filePath = path.join(process.cwd(), "content", filename)
-  
+
   const fileContent = fs.readFileSync(filePath, "utf8")
   
   // Process markdown to HTML with proper styling
   const processedContent = await remark()
     .use(html)
     .process(fileContent)
-  
+
   // Wrap the converted HTML with markdown-style CSS
   return `
     <div class="markdown-body">

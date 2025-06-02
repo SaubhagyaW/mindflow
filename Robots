@@ -1,0 +1,44 @@
+# Robots.txt for MindFlow - Brainstorming AI Platform
+# https://mind-flow.ai/robots.txt
+
+User-agent: *
+Allow: /
+Allow: /services
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /return-policy
+
+# Block private areas
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /verify-email
+Disallow: /check-email
+Disallow: /accept-terms
+
+# Allow crawling of key brainstorming AI content
+Allow: /services*
+Allow: /pricing*
+
+# Sitemap location
+Sitemap: https://mind-flow.ai/sitemap.xml
+
+# Crawl delay for better server performance
+Crawl-delay: 1
+
+# Special instructions for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
