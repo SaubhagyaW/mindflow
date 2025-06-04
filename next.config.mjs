@@ -31,19 +31,7 @@ const nextConfig = {
 
   async redirects() {
     return [
-      // Redirect www.mind-flow.ai to mind-flow.ai (301 permanent redirect)
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.mind-flow.ai',
-          },
-        ],
-        destination: 'https://mind-flow.ai/:path*',
-        permanent: true,
-      },
-      // Legacy redirects for any old URLs
+      // Only add non-domain redirects to avoid conflicts
       {
         source: '/app',
         destination: '/services',
