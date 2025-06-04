@@ -1,6 +1,7 @@
 import {SiteHeader} from "@/components/site-header"
 import {SiteFooter} from "@/components/site-footer"
 import {PricingClientPage} from "./PricingClientPage"
+import {Metadata} from "next";
 
 export const metadata: Metadata = {
     title: "Pricing - MindFlow",

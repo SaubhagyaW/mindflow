@@ -1,5 +1,3 @@
-"use client"
-
 import {useEffect, useState} from "react"
 import {useRouter} from "next/navigation"
 import {useSession} from "next-auth/react"
@@ -11,6 +9,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {ArrowRight, Brain, Loader2, MessageSquare, Mic, Plus, Share2, Target, Zap} from "lucide-react"
 import {SiteHeader} from "@/components/site-header"
 import {SiteFooter} from "@/components/site-footer"
+import {Metadata} from "next";
 
 // Add these type definitions at the top of the file, after the imports
 type Conversation = {
