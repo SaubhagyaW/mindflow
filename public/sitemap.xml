@@ -5,12 +5,12 @@
   
   <!-- Homepage - Brainstorming AI -->
   <url>
-    <loc>https://mind-flow.ai/</loc>
+    <loc>https://www.mind-flow.ai/</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://mind-flow.ai/assets/hero.svg</image:loc>
+      <image:loc>https://www.mind-flow.ai/assets/hero.svg</image:loc>
       <image:caption>MindFlow AI-Powered Brainstorming Platform</image:caption>
       <image:title>Brainstorming AI Assistant</image:title>
     </image:image>
@@ -18,12 +18,12 @@
 
   <!-- Services - AI Brainstorming Services -->
   <url>
-    <loc>https://mind-flow.ai/services</loc>
+    <loc>https://www.mind-flow.ai/services</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
-      <image:loc>https://mind-flow.ai/assets/brainstorming-ai-services.jpg</image:loc>
+      <image:loc>https://www.mind-flow.ai/assets/brainstorming-ai-services.jpg</image:loc>
       <image:caption>Professional AI Brainstorming Services</image:caption>
       <image:title>AI-Powered Voice Brainstorming</image:title>
     </image:image>
@@ -31,7 +31,7 @@
 
   <!-- Pricing - Brainstorming AI Plans -->
   <url>
-    <loc>https://mind-flow.ai/pricing</loc>
+    <loc>https://www.mind-flow.ai/pricing</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -39,7 +39,7 @@
 
   <!-- About - Company Information -->
   <url>
-    <loc>https://mind-flow.ai/about</loc>
+    <loc>https://www.mind-flow.ai/about</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -47,7 +47,7 @@
 
   <!-- Contact - Support & Sales -->
   <url>
-    <loc>https://mind-flow.ai/contact</loc>
+    <loc>https://www.mind-flow.ai/contact</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -55,7 +55,7 @@
 
   <!-- Terms of Service -->
   <url>
-    <loc>https://mind-flow.ai/terms</loc>
+    <loc>https://www.mind-flow.ai/terms</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
@@ -63,7 +63,7 @@
 
   <!-- Privacy Policy -->
   <url>
-    <loc>https://mind-flow.ai/privacy</loc>
+    <loc>https://www.mind-flow.ai/privacy</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
@@ -71,7 +71,7 @@
 
   <!-- Return Policy -->
   <url>
-    <loc>https://mind-flow.ai/return-policy</loc>
+    <loc>https://www.mind-flow.ai/return-policy</loc>
     <lastmod>2024-12-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
