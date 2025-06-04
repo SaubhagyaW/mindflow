@@ -1,13 +1,21 @@
-import type { Metadata } from "next"
+import type {Metadata} from "next"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
+import {Button} from "@/components/ui/button"
+import {ArrowLeft} from "lucide-react"
+import {SiteHeader} from "@/components/site-header"
+import {SiteFooter} from "@/components/site-footer"
 
 export const metadata: Metadata = {
   title: "About MindFlow",
   description: "Learn about MindFlow's mission, team, and story",
+  alternates: {
+    canonical: "https://www.mind-flow.ai/about",
+  },
+  openGraph: {
+    title: "About MindFlow - Our Mission and Story",
+    description: "Learn about MindFlow's mission to transform how people capture, organize, and share their ideas through AI-assisted conversations.",
+    url: "https://www.mind-flow.ai/about",
+  },
 }
 
 export default function AboutPage() {

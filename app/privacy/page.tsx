@@ -1,14 +1,22 @@
-import type { Metadata } from "next"
+import type {Metadata} from "next"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { getMarkdownContent } from "@/lib/markdown"
+import {Button} from "@/components/ui/button"
+import {ArrowLeft} from "lucide-react"
+import {SiteHeader} from "@/components/site-header"
+import {SiteFooter} from "@/components/site-footer"
+import {getMarkdownContent} from "@/lib/markdown"
 
 export const metadata: Metadata = {
   title: "Privacy Policy - MindFlow",
   description: "MindFlow's privacy policy and data protection practices",
+  alternates: {
+    canonical: "https://www.mind-flow.ai/privacy", // ✅ Changed to match page URL
+  },
+  openGraph: {
+    title: "Privacy Policy - MindFlow",
+    description: "How we protect and manage your data",
+    url: "https://www.mind-flow.ai/privacy", // ✅ Changed to www version
+  },
 }
 
 export default async function PrivacyPolicyPage() {

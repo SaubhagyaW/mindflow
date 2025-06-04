@@ -1,6 +1,6 @@
 import type {Metadata} from "next"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
-import {Mail, MapPin, Phone} from "lucide-react"
+import {Mail} from "lucide-react"
 import {SiteHeader} from "@/components/site-header"
 import {SiteFooter} from "@/components/site-footer"
 import ContactForm from "@/components/contact-form"
@@ -8,6 +8,14 @@ import ContactForm from "@/components/contact-form"
 export const metadata: Metadata = {
     title: "Contact MindFlow",
     description: "Get in touch with the MindFlow team",
+    alternates: {
+        canonical: "https://www.mind-flow.ai/contact", // ✅ Changed to match page URL
+    },
+    openGraph: {
+        title: "Contact MindFlow - Get in Touch",
+        description: "Have questions about MindFlow? We're here to help. Reach out to our team.",
+        url: "https://www.mind-flow.ai/contact", // ✅ Changed to www version
+    },
 }
 
 export default function ContactPage() {

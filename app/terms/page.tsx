@@ -1,14 +1,22 @@
-import type { Metadata } from "next"
+import type {Metadata} from "next"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { getMarkdownContent } from "@/lib/markdown"
+import {Button} from "@/components/ui/button"
+import {ArrowLeft} from "lucide-react"
+import {SiteHeader} from "@/components/site-header"
+import {SiteFooter} from "@/components/site-footer"
+import {getMarkdownContent} from "@/lib/markdown"
 
 export const metadata: Metadata = {
   title: "Terms of Service - MindFlow",
   description: "MindFlow's terms and conditions for using our service",
+  alternates: {
+    canonical: "https://www.mind-flow.ai/terms", // ✅ Changed to match page URL
+  },
+  openGraph: {
+    title: "Terms of Service - MindFlow",
+    description: "Please read our terms and conditions carefully",
+    url: "https://www.mind-flow.ai/terms", // ✅ Changed to www version
+  },
 }
 
 export default async function TermsPage() {

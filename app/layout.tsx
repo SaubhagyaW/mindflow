@@ -77,9 +77,9 @@ export const metadata = {
         google: "your-google-verification-code",
         bing: "your-bing-verification-code",
     },
-    alternates: {
-        canonical: "https://mind-flow.ai",
-    },
+    // alternates: {
+    //     canonical: "https://mind-flow.ai",
+    // },
     category: "Technology",
     classification: "AI Software, Brainstorming Tools, Voice Technology",
 }

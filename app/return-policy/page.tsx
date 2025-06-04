@@ -1,14 +1,22 @@
-import type { Metadata } from "next"
+import type {Metadata} from "next"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { getMarkdownContent } from "@/lib/markdown"
+import {Button} from "@/components/ui/button"
+import {ArrowLeft} from "lucide-react"
+import {SiteHeader} from "@/components/site-header"
+import {SiteFooter} from "@/components/site-footer"
+import {getMarkdownContent} from "@/lib/markdown"
 
 export const metadata: Metadata = {
   title: "Return Policy - MindFlow",
   description: "MindFlow's refund and cancellation policies",
+  alternates: {
+    canonical: "https://www.mind-flow.ai/return-policy", // ✅ Changed to match page URL
+  },
+  openGraph: {
+    title: "Return Policy - MindFlow",
+    description: "Our refund and cancellation terms",
+    url: "https://www.mind-flow.ai/return-policy", // ✅ Changed to www version
+  },
 }
 
 export default async function ReturnPolicyPage() {

@@ -2,15 +2,30 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
+import {Button} from "@/components/ui/button"
 import {ArrowRight, FileText, Mic, Save, Share2, Trash2, UserCircle} from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
+import {SiteHeader} from "@/components/site-header"
+import {SiteFooter} from "@/components/site-footer"
+
+import type {Metadata} from "next"
+
+export const metadata: Metadata = {
+    title: "MindFlow - AI-Powered Brainstorming | #1 Voice Brainstorming AI Assistant",
+    description: "MindFlow is the leading AI-powered brainstorming platform that transforms voice conversations into organized ideas, notes, and action items. Experience intelligent brainstorming with our ChatGPT-powered voice assistant.",
+    alternates: {
+        canonical: "https://www.mind-flow.ai", // ✅ Changed from https://mind-flow.ai to match page URL
+    },
+    openGraph: {
+        title: "MindFlow - #1 AI-Powered Brainstorming Platform | Voice Brainstorming AI",
+        description: "Transform your ideas with MindFlow's intelligent brainstorming AI. Chat with our voice assistant, get real-time responses, and automatically organize your thoughts into actionable plans.",
+        url: "https://www.mind-flow.ai", // ✅ Changed to www version
+    },
+}
 
 export default function Home() {
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            <SiteHeader />
+            <SiteHeader/>
 
             <main className="flex-1 pt-24">
                 {/* Hero Section */}
@@ -51,13 +66,13 @@ export default function Home() {
                         </div>
                         <div
                             className="relative h-[350px] w-[350px] sm:h-[400px] sm:w-[400px] lg:h-[500px] lg:w-[500px]">
-                                <Image
+                            <Image
                                 src="/assets/hero.svg?height=500&width=500"
                                 alt="MindFlow in action"
-                                    fill
+                                fill
                                 className="object-cover"
-                                    priority
-                                />
+                                priority
+                            />
                         </div>
                     </div>
                 </section>
@@ -154,7 +169,7 @@ export default function Home() {
                         <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
                             Watch how MindFlow can transform your brainstorming sessions and help you capture your best
                             ideas.
-                            </p>
+                        </p>
                         <div className="relative max-w-4xl mx-auto aspect-video bg-gray-200 rounded-lg shadow-lg">
                             {/* This would be replaced with an actual video player */}
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -174,16 +189,16 @@ export default function Home() {
                         <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
                             Join thousands of users who are already using MindFlow to capture and organize their ideas.
                         </p>
-                            <Link href="/services">
+                        <Link href="/services">
                             <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
                                 Try MindFlow Now <ArrowRight className="ml-2 h-4 w-4"/>
-                                </Button>
-                            </Link>
+                            </Button>
+                        </Link>
                     </div>
                 </section>
             </main>
 
-            <SiteFooter />
+            <SiteFooter/>
         </div>
     )
 }

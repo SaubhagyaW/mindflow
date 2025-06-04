@@ -1,16 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
+import {useEffect, useState} from "react"
+import {useRouter} from "next/navigation"
+import {useSession} from "next-auth/react"
 import Link from "next/link"
 import Head from "next/head"
-import { VoiceConversation } from "@/components/voice-conversation"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Brain, Loader2, Plus, Zap, Target, Mic, MessageSquare, ArrowRight, Share2 } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
+import {VoiceConversation} from "@/components/voice-conversation"
+import {Button} from "@/components/ui/button"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {ArrowRight, Brain, Loader2, MessageSquare, Mic, Plus, Share2, Target, Zap} from "lucide-react"
+import {SiteHeader} from "@/components/site-header"
+import {SiteFooter} from "@/components/site-footer"
 
 // Add these type definitions at the top of the file, after the imports
 type Conversation = {
@@ -21,6 +21,19 @@ type Conversation = {
   createdAt: string
   updatedAt: string
   userId: string
+}
+
+export const metadata: Metadata = {
+  title: "AI Brainstorming Services | MindFlow - Voice-Powered Brainstorming AI",
+  description: "Experience the most advanced brainstorming AI platform. Start voice conversations with our ChatGPT-powered assistant to transform your ideas into organized action plans.",
+  alternates: {
+    canonical: "https://www.mind-flow.ai/services", // ✅ Changed to match page URL
+  },
+  openGraph: {
+    title: "Professional AI Brainstorming Services | MindFlow Voice Assistant",
+    description: "Transform your creative process with MindFlow's brainstorming AI. Engage in intelligent voice conversations that automatically organize ideas into actionable insights.",
+    url: "https://www.mind-flow.ai/services", // ✅ Changed to www version
+  },
 }
 
 export default function ServicesPage() {
@@ -97,7 +110,7 @@ export default function ServicesPage() {
         <meta property="og:description" content="Transform your creative process with MindFlow's brainstorming AI. Engage in intelligent voice conversations that automatically organize ideas into actionable insights." />
         <meta property="og:url" content="https://mind-flow.ai/services" />
       </Head>
-      
+
       <div className="flex flex-col min-h-screen bg-white">
         <SiteHeader />
 
@@ -108,8 +121,8 @@ export default function ServicesPage() {
               Professional <span className="text-blue-600">AI Brainstorming Services</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
-              Experience the future of ideation with MindFlow's advanced <strong>brainstorming AI platform</strong>. 
-              Our ChatGPT-powered voice assistant transforms natural conversations into organized ideas, 
+              Experience the future of ideation with MindFlow's advanced <strong>brainstorming AI platform</strong>.
+              Our ChatGPT-powered voice assistant transforms natural conversations into organized ideas,
               structured notes, and actionable insights—revolutionizing how professionals approach creative problem-solving.
             </p>
             <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">
@@ -139,7 +152,7 @@ export default function ServicesPage() {
                   <TabsTrigger value="new">New Session</TabsTrigger>
                   <TabsTrigger value="history">History</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="new" className="space-y-8">
                   <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 max-w-4xl mx-auto">
                     <div className="text-center mb-6">
@@ -148,14 +161,14 @@ export default function ServicesPage() {
                         Start Your AI Brainstorming Session
                       </h2>
                       <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                        Begin a natural voice conversation with our brainstorming AI. Speak your ideas 
+                        Begin a natural voice conversation with our brainstorming AI. Speak your ideas
                         and watch as our assistant helps develop and organize your thoughts.
                       </p>
                     </div>
                     <VoiceConversation onSave={fetchConversations} />
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="history">
                   <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 max-w-4xl mx-auto">
                     <div className="flex items-center gap-3 mb-6">
@@ -222,7 +235,7 @@ export default function ServicesPage() {
                     Experience a revolutionary approach to ideation with our step-by-step AI-powered process
                   </p>
                 </div>
-                
+
                 <div className="grid md:grid-cols-4 gap-8">
                   <div className="text-center">
                     <div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
@@ -267,7 +280,7 @@ export default function ServicesPage() {
                     Discover the competitive advantages of integrating artificial intelligence into your creative process
                   </p>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-8 mb-12">
                   <div className="space-y-6">
                     <div className="flex items-start gap-4">
@@ -281,7 +294,7 @@ export default function ServicesPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
                       <div className="bg-green-100 p-3 rounded-full flex-shrink-0">
                         <Zap className="h-6 w-6 text-green-600" />
@@ -293,7 +306,7 @@ export default function ServicesPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
                       <div className="bg-purple-100 p-3 rounded-full flex-shrink-0">
                         <Target className="h-6 w-6 text-purple-600" />
@@ -306,7 +319,7 @@ export default function ServicesPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-6">
                     <div className="flex items-start gap-4">
                       <div className="bg-orange-100 p-3 rounded-full flex-shrink-0">
@@ -319,7 +332,7 @@ export default function ServicesPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
                       <div className="bg-teal-100 p-3 rounded-full flex-shrink-0">
                         <Mic className="h-6 w-6 text-teal-600" />
@@ -331,7 +344,7 @@ export default function ServicesPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
                       <div className="bg-pink-100 p-3 rounded-full flex-shrink-0">
                         <Share2 className="h-6 w-6 text-pink-600" />

@@ -28,28 +28,58 @@ const nextConfig = {
     locales: ['en'],
     defaultLocale: 'en',
   },
-}
 
-mergeConfig(nextConfig, userConfig)
+  async redirects() {
+    return [
+      // Only add non-domain redirects to avoid conflicts
+      {
+        source: '/app',
+        destination: '/services',
+        permanent: true,
+      },
+      {
+        source: '/login',
+        destination: '/sign-in',
+        permanent: true,
+      },
+      {
+        source: '/register',
+        destination: '/sign-up',
+        permanent: true,
+      },
+    ]
+  },
 
-function mergeConfig(nextConfig, userConfig) {
-  if (!userConfig) {
-    return
-  }
-
-  for (const key in userConfig) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
-      nextConfig[key] = {
-        ...nextConfig[key],
-        ...userConfig[key],
-      }
-    } else {
-      nextConfig[key] = userConfig[key]
-    }
-  }
+  // Add security and SEO headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig
