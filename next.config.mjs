@@ -28,6 +28,70 @@ const nextConfig = {
     locales: ['en'],
     defaultLocale: 'en',
   },
+
+  async redirects() {
+    return [
+      // Redirect www.mind-flow.ai to mind-flow.ai (301 permanent redirect)
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.mind-flow.ai',
+          },
+        ],
+        destination: 'https://mind-flow.ai/:path*',
+        permanent: true,
+      },
+      // Legacy redirects for any old URLs
+      {
+        source: '/app',
+        destination: '/services',
+        permanent: true,
+      },
+      {
+        source: '/login',
+        destination: '/sign-in',
+        permanent: true,
+      },
+      {
+        source: '/register',
+        destination: '/sign-up',
+        permanent: true,
+      },
+    ]
+  },
+
+  // Add security and SEO headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 mergeConfig(nextConfig, userConfig)
