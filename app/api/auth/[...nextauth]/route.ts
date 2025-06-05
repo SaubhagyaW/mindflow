@@ -1,9 +1,9 @@
-import NextAuth, { type NextAuthOptions } from "next-auth"
+import type {Session, User} from "next-auth"
+import NextAuth, {type NextAuthOptions} from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcryptjs"
+import {compare} from "bcryptjs"
 import prisma from "@/lib/db"
-import type { JWT } from "next-auth/jwt"
-import type { Session, User } from "next-auth"
+import type {JWT} from "next-auth/jwt"
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -36,37 +36,25 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Use type assertion to access the properties
-        // This is a temporary fix until Prisma client is regenerated
-        const typedUser = user as unknown as {
-          id: string
-          name: string
-          email: string
-          password: string
-          isVerified: boolean
-          hasAcceptedTerms: boolean
-          subscription?: { plan: string; status: string; currentPeriodEnd?: string }
-        }
-
         // Compare password
-        const passwordMatch = await compare(credentials.password, typedUser.password)
+        const passwordMatch = await compare(credentials.password, user.password || user.hashedPassword || "")
 
         if (!passwordMatch) {
           return null
         }
 
-        // Return user with explicitly typed properties and include isVerified status
+        // Return user with proper typing
         return {
-          id: typedUser.id,
-          name: typedUser.name,
-          email: typedUser.email,
-          hasAcceptedTerms: typedUser.hasAcceptedTerms,
-          isVerified: typedUser.isVerified, // Include isVerified status
-          subscription: typedUser.subscription
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          hasAcceptedTerms: user.hasAcceptedTerms,
+          isVerified: user.isVerified, // Make sure this is included
+          subscription: user.subscription
             ? {
-                plan: typedUser.subscription.plan,
-                status: "active", // Replace with actual status if available
-                currentPeriodEnd: undefined, // Replace with actual value if available
+                plan: user.subscription.plan,
+                status: "active",
+                currentPeriodEnd: user.subscription.endDate?.toISOString(),
               }
             : undefined,
         }
@@ -86,7 +74,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email
         token.hasAcceptedTerms = user.hasAcceptedTerms
         token.subscription = user.subscription
-        token.isVerified = user.isVerified // Add isVerified to token
+        token.isVerified = user.isVerified
       }
 
       // Handle session updates
@@ -110,7 +98,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string
         session.user.email = token.email as string
         session.user.hasAcceptedTerms = token.hasAcceptedTerms as boolean
-        session.user.isVerified = token.isVerified as boolean // Add isVerified to session
+        session.user.isVerified = token.isVerified as boolean
         session.user.subscription = token.subscription as { plan: string; status: string; currentPeriodEnd?: string | undefined } | undefined
       }
       return session

@@ -5,58 +5,54 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/db"
 import { sendVerificationEmail } from "@/lib/email"
 
-export const dynamic = "force-dynamic" // Ensure this route is not cached
+export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   try {
-    // Get the current session to verify the user is logged in
     const session = await getServerSession(authOptions)
-
-    // Get email from request body or session
     const { email } = await req.json()
 
-    // Verify the email matches the session user's email or the user is an admin
-    if (!session?.user?.email && !email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    console.log("Resend verification request for:", email || session?.user?.email)
 
     const userEmail = email || session?.user?.email
 
+    if (!userEmail) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 })
+    }
+
     // Find the user
     const user = await prisma.user.findUnique({
-      where: {
-        email: userEmail,
-      },
+      where: { email: userEmail },
     })
 
     if (!user) {
+      console.log("User not found for email:", userEmail)
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // If user is already verified, no need to resend
+    // If user is already verified
     if (user.isVerified) {
+      console.log("User already verified:", userEmail)
       return NextResponse.json({ message: "Email already verified" })
     }
 
     // Generate a new verification token
     const verificationToken = randomBytes(32).toString("hex")
+    console.log("Generated new verification token for:", userEmail)
 
     // Update the user with the new token
     await prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        verificationToken,
-      },
+      where: { id: user.id },
+      data: { verificationToken },
     })
 
     // Send the verification email
     try {
       await sendVerificationEmail(userEmail, verificationToken)
+      console.log("Verification email resent successfully to:", userEmail)
       return NextResponse.json({ message: "Verification email sent successfully" })
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError)
+      console.error("Failed to resend verification email:", emailError)
       return NextResponse.json(
         {
           error: "Failed to send verification email",
