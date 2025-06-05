@@ -21,7 +21,7 @@ export function getEmailTransporter() {
   try {
     validateEmailConfig()
 
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT || "587"),
       secure: process.env.EMAIL_PORT === "465", // true for 465, false for other ports
