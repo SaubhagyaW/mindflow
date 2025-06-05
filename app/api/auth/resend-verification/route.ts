@@ -11,9 +11,9 @@ export async function POST(req: NextRequest) {
   try {
     console.log("=== RESEND VERIFICATION EMAIL REQUEST ===")
 
-    // Get session and request body
     const session = await getServerSession(authOptions)
     console.log("Session user:", session?.user?.email)
+    console.log("Session isVerified:", session?.user?.isVerified)
 
     let requestBody
     try {
@@ -24,19 +24,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { email } = requestBody
-    console.log("Request email:", email)
-
-    // Determine which email to use
     const targetEmail = email || session?.user?.email
 
     if (!targetEmail) {
-      console.error("No email provided and no session email found")
+      console.error("No email provided")
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
     console.log("Target email for verification:", targetEmail)
 
-    // Find the user in database
+    // IMPORTANT: Query the database directly to get the real verification status
     const user = await prisma.user.findUnique({
       where: { email: targetEmail },
       select: {
@@ -53,16 +50,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log("Found user:", { id: user.id, email: user.email, isVerified: user.isVerified })
+    // Log the ACTUAL database state vs session state
+    console.log("=== VERIFICATION STATUS COMPARISON ===")
+    console.log("Database isVerified:", user.isVerified)
+    console.log("Session isVerified:", session?.user?.isVerified)
+    console.log("Current verification token exists:", !!user.verificationToken)
 
-    // Check if user is already verified
+    // Check the ACTUAL database verification status (not session)
     if (user.isVerified) {
-      console.log("User already verified, no need to resend")
+      console.log("User is actually verified in database - updating session")
+
+      // The user is verified in DB but session is out of sync
+      // Return success and let the frontend handle session update
       return NextResponse.json({
         message: "Email already verified",
-        isVerified: true
+        isVerified: true,
+        shouldUpdateSession: true // Flag to update session
       })
     }
+
+    console.log("User is not verified in database, proceeding with resend...")
 
     // Generate a new verification token
     const verificationToken = randomBytes(32).toString("hex")
@@ -75,7 +82,7 @@ export async function POST(req: NextRequest) {
       select: { id: true, email: true, verificationToken: true }
     })
 
-    console.log("Updated user with new token:", updatedUser.id)
+    console.log("Updated user with new token")
 
     // Send the verification email
     try {
@@ -92,7 +99,6 @@ export async function POST(req: NextRequest) {
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError)
 
-      // Provide more specific error information
       const errorMessage = emailError instanceof Error ? emailError.message : String(emailError)
 
       return NextResponse.json({
