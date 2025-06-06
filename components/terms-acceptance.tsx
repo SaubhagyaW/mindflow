@@ -23,33 +23,13 @@ export function TermsAcceptance({ termsContent, privacyContent, returnPolicyCont
   const [isAccepted, setIsAccepted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isSuccess, setIsSuccess] = useState(false)
 
   useEffect(() => {
-    console.log("Component mounted, checking session...")
+    console.log("TermsAcceptance component mounted, checking session...")
     if (session) {
       console.log("User session data:", session)
     }
   }, [session])
-
-  // Effect to handle navigation after successful terms acceptance
-  useEffect(() => {
-    if (isSuccess) {
-      console.log("Terms accepted successfully. Updating session before redirect...")
-      // Update the session data before redirecting
-      update({ hasAcceptedTerms: true }).then(() => {
-        console.log("Session updated, now redirecting to /dashboard...")
-        const timer = setTimeout(() => {
-          console.log("Redirecting to /dashboard")
-          router.push("/dashboard")
-        }, 1000)
-        
-        return () => clearTimeout(timer)
-      }).catch(err => {
-        console.error("Error updating session:", err)
-      })
-    }
-  }, [isSuccess, update, router])
 
   // Handle terms acceptance
   const handleAcceptTerms = async () => {
@@ -84,13 +64,37 @@ export function TermsAcceptance({ termsContent, privacyContent, returnPolicyCont
         throw new Error(responseData.error || "Failed to accept terms")
       }
 
-      toast({
-        title: "Terms accepted",
-        description: "Thank you for accepting our terms. You will be redirected to the dashboard.",
+      // Update the session immediately
+      console.log("Terms accepted successfully, updating session...")
+      await update({
+        hasAcceptedTerms: true,
+        isVerified: true // Also mark as verified since terms acceptance implies verification
       })
 
-      console.log("Acceptance successful, setting success state")
-      setIsSuccess(true)
+      // Force a session refresh
+      await fetch("/api/auth/session", {
+        method: "GET",
+        cache: "no-store",
+      })
+
+      toast({
+        title: "Terms accepted",
+        description: "Thank you for accepting our terms. Redirecting to dashboard...",
+      })
+
+      console.log("Session updated, redirecting to dashboard...")
+
+      // Use multiple redirect strategies to ensure it works
+      setTimeout(() => {
+        // First try Next.js router
+        router.push("/dashboard")
+
+        // Fallback to hard navigation after a short delay
+        setTimeout(() => {
+          window.location.href = "/dashboard"
+        }, 1000)
+      }, 1500)
+
     } catch (error: any) {
       console.error("Error accepting terms:", error)
       setError(error.message || "There was a problem accepting the terms. Please try again.")
@@ -152,15 +156,6 @@ export function TermsAcceptance({ termsContent, privacyContent, returnPolicyCont
           </div>
         )}
 
-        {isSuccess && (
-          <div className="px-6 py-3 bg-green-50 text-green-700 border-t border-green-200">
-            <p className="flex items-center">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Terms accepted successfully. Redirecting to dashboard...
-            </p>
-          </div>
-        )}
-
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <div className="flex items-start space-x-2 mb-6">
             <Checkbox
@@ -181,19 +176,14 @@ export function TermsAcceptance({ termsContent, privacyContent, returnPolicyCont
             <Button variant="outline" onClick={() => {
               console.log("User clicked cancel. Redirecting to home.")
               router.push("/")
-            }} disabled={isSuccess}>
+            }} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button onClick={handleAcceptTerms} disabled={isSubmitting || !isAccepted || isSuccess}>
+            <Button onClick={handleAcceptTerms} disabled={isSubmitting || !isAccepted}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...
-                </>
-              ) : isSuccess ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Redirecting...
                 </>
               ) : (
                 "Accept and Continue"
