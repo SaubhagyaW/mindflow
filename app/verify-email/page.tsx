@@ -39,7 +39,14 @@ export default function VerifyEmailPage() {
           setMessage(data.message || "Your email has been verified successfully!")
 
           // Update the session to reflect the verified status
+          console.log("Updating session with verified status")
           await update({ isVerified: true })
+
+          // Force a session refresh by making a request to the session endpoint
+          await fetch("/api/auth/session", {
+            method: "GET",
+            cache: "no-store",
+          })
 
           // Show success toast
           toast({
@@ -49,7 +56,8 @@ export default function VerifyEmailPage() {
 
           // Automatically redirect to dashboard after 3 seconds
           setTimeout(() => {
-            router.push("/dashboard")
+            // Force a hard navigation to ensure the session is refreshed
+            window.location.href = "/dashboard"
           }, 3000)
         } else {
           console.error("Verification failed:", data.error)
@@ -64,14 +72,20 @@ export default function VerifyEmailPage() {
 
             if (profileResponse.ok) {
               const profileData = await profileResponse.json()
-              if (profileData.user && profileData.user.isVerified) {
+              if (profileData.user && profileData.user.hasAcceptedTerms) {
                 setStatus("success")
                 setMessage("Your email is already verified!")
                 await update({ isVerified: true })
 
+                // Force session refresh
+                await fetch("/api/auth/session", {
+                  method: "GET",
+                  cache: "no-store",
+                })
+
                 // Automatically redirect to dashboard after 3 seconds
                 setTimeout(() => {
-                  router.push("/dashboard")
+                  window.location.href = "/dashboard"
                 }, 3000)
               }
             }
@@ -87,7 +101,7 @@ export default function VerifyEmailPage() {
     }
 
     verifyEmail()
-  }, [token, update, toast, router])
+  }, [token, update, toast])
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12 lg:px-8 bg-white">
@@ -113,7 +127,15 @@ export default function VerifyEmailPage() {
               <p className="text-gray-500 mt-2">Redirecting to dashboard in a few seconds...</p>
               <div className="mt-6">
                 <Link href="/dashboard">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">Go to Dashboard</Button>
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => {
+                      // Force hard navigation to ensure session refresh
+                      window.location.href = "/dashboard"
+                    }}
+                  >
+                    Go to Dashboard
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -126,7 +148,15 @@ export default function VerifyEmailPage() {
               <p className="text-gray-500 mt-2">{message}</p>
               <div className="mt-6 space-y-4">
                 <Link href="/dashboard">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full">Go to Dashboard</Button>
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                    onClick={() => {
+                      // Force hard navigation to ensure session refresh
+                      window.location.href = "/dashboard"
+                    }}
+                  >
+                    Go to Dashboard
+                  </Button>
                 </Link>
                 <Link href="/">
                   <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">

@@ -33,18 +33,24 @@ export function EmailVerificationBanner() {
           const data = await response.json()
           console.log("Profile data received:", data)
 
-          if (data.user && data.user.isVerified) {
-            console.log("User is verified according to database")
-            setIsVerified(true)
+          if (data.user && data.user.hasAcceptedTerms !== undefined) {
+            // Use hasAcceptedTerms as the verification indicator since that's what's in the schema
+            const userIsVerified = data.user.hasAcceptedTerms
+            console.log("User verification status from DB:", userIsVerified)
+            setIsVerified(userIsVerified)
+
             // Update session to reflect verified status
+            if (userIsVerified && !session.user.isVerified) {
             await update({ isVerified: true })
+            }
           } else {
-            console.log("User is not verified according to database")
+            console.log("User verification data not found, assuming not verified")
             setIsVerified(false)
           }
         }
       } catch (error) {
         console.error("Error checking verification status:", error)
+        setIsVerified(false)
       } finally {
         setIsLoading(false)
       }
@@ -53,12 +59,16 @@ export function EmailVerificationBanner() {
     checkVerificationStatus()
   }, [session, update])
 
-  // Only show for unverified users
+  // Don't show banner if:
+  // 1. Still loading
+  // 2. No user session
+  // 3. User is verified (either from session or from DB check)
+  // 4. Banner has been dismissed
   if (isLoading || !session?.user || isVerified || session.user.isVerified || isDismissed) {
     return null
   }
 
-  console.log("Rendering verification banner, verified status:", isVerified)
+  console.log("Rendering verification banner for unverified user")
 
   const handleResendVerification = async () => {
     setIsResending(true)

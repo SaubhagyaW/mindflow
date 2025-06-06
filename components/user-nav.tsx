@@ -43,7 +43,8 @@ export function UserNav() {
         if (response.ok) {
           const data = await response.json()
           if (data.user) {
-            const isVerified = data.user.isVerified || false
+            // Use hasAcceptedTerms as the verification indicator since that's what's consistently available
+            const isVerified = data.user.hasAcceptedTerms || data.user.isVerified || false
 
             setUserData({
               name: data.user.name || "User",
@@ -53,6 +54,7 @@ export function UserNav() {
 
             // Update session if verification status has changed
             if (isVerified !== session.user.isVerified) {
+              console.log("Updating session with new verification status:", isVerified)
               await update({ isVerified })
             }
           }
@@ -66,6 +68,18 @@ export function UserNav() {
       fetchUserData()
     }
   }, [session, update])
+
+  // Update local state when session changes
+  useEffect(() => {
+    if (session?.user) {
+      setUserData(prev => ({
+        ...prev,
+        name: session.user.name || prev.name,
+        email: session.user.email || prev.email,
+        isVerified: session.user.isVerified || prev.isVerified,
+      }))
+    }
+  }, [session?.user])
 
   // Get user initials for avatar fallback
   const getInitials = () => {
