@@ -33,15 +33,18 @@ export function EmailVerificationBanner() {
           const data = await response.json()
           console.log("Profile data received:", data)
 
-          if (data.user && data.user.hasAcceptedTerms !== undefined) {
-            // Use hasAcceptedTerms as the verification indicator since that's what's in the schema
-            const userIsVerified = data.user.hasAcceptedTerms
+          if (data.user) {
+            // Check if user has isVerified field, otherwise check hasAcceptedTerms as fallback
+            const userIsVerified = data.user.isVerified !== undefined
+              ? data.user.isVerified
+              : data.user.hasAcceptedTerms || false
+
             console.log("User verification status from DB:", userIsVerified)
             setIsVerified(userIsVerified)
 
             // Update session to reflect verified status
-            if (userIsVerified && !session.user.isVerified) {
-            await update({ isVerified: true })
+            if (userIsVerified !== session.user.isVerified) {
+              await update({ isVerified: userIsVerified })
             }
           } else {
             console.log("User verification data not found, assuming not verified")
@@ -59,12 +62,27 @@ export function EmailVerificationBanner() {
     checkVerificationStatus()
   }, [session, update])
 
-  // Don't show banner if:
-  // 1. Still loading
-  // 2. No user session
-  // 3. User is verified (either from session or from DB check)
-  // 4. Banner has been dismissed
-  if (isLoading || !session?.user || isVerified || session.user.isVerified || isDismissed) {
+  // Show banner if:
+  // 1. Not loading
+  // 2. User session exists
+  // 3. User is NOT verified (check both session and local state)
+  // 4. Banner has NOT been dismissed
+  const shouldShowBanner = !isLoading &&
+                          session?.user &&
+                          !isVerified &&
+                          !session.user.isVerified &&
+                          !isDismissed
+
+  console.log("Banner visibility check:", {
+    isLoading,
+    hasUser: !!session?.user,
+    isVerified,
+    sessionIsVerified: session?.user?.isVerified,
+    isDismissed,
+    shouldShowBanner
+  })
+
+  if (!shouldShowBanner) {
     return null
   }
 

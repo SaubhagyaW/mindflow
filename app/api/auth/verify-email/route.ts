@@ -43,14 +43,12 @@ export async function GET(req: NextRequest) {
     console.log("User found, updating verification status for user:", user.id)
 
     // Update user to mark as verified and remove the token
-    // Also set hasAcceptedTerms to true since email verification implies acceptance
     await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
         isVerified: true,
-        hasAcceptedTerms: true, // Set this to true as well for consistency
         verificationToken: null,
       },
     })

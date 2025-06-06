@@ -20,7 +20,8 @@ export async function GET() {
         name: true,
         email: true,
         createdAt: true,
-        hasAcceptedTerms: true, // Use hasAcceptedTerms instead of isVerified
+        isVerified: true, // Make sure we include isVerified field
+        hasAcceptedTerms: true, // Keep this for terms acceptance
         subscription: {
           select: {
             id: true,

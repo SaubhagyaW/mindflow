@@ -43,8 +43,8 @@ export function UserNav() {
         if (response.ok) {
           const data = await response.json()
           if (data.user) {
-            // Use hasAcceptedTerms as the verification indicator since that's what's consistently available
-            const isVerified = data.user.hasAcceptedTerms || data.user.isVerified || false
+            // Check if user has isVerified field, otherwise use false
+            const isVerified = data.user.isVerified || false
 
             setUserData({
               name: data.user.name || "User",
