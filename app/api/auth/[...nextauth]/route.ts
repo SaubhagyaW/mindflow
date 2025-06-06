@@ -36,20 +36,8 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Use type assertion to access the properties
-        // This is a temporary fix until Prisma client is regenerated
-        const typedUser = user as unknown as {
-          id: string
-          name: string
-          email: string
-          password: string
-          isVerified: boolean
-          hasAcceptedTerms: boolean
-          subscription?: { plan: string; status: string; currentPeriodEnd?: string }
-        }
-
         // Compare password
-        const passwordMatch = await compare(credentials.password, typedUser.password)
+        const passwordMatch = await compare(credentials.password, user.password)
 
         if (!passwordMatch) {
           return null
@@ -57,16 +45,16 @@ export const authOptions: NextAuthOptions = {
 
         // Return user with explicitly typed properties and include isVerified status
         return {
-          id: typedUser.id,
-          name: typedUser.name,
-          email: typedUser.email,
-          hasAcceptedTerms: typedUser.hasAcceptedTerms,
-          isVerified: typedUser.isVerified, // Include isVerified status
-          subscription: typedUser.subscription
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          hasAcceptedTerms: user.hasAcceptedTerms,
+          isVerified: user.isVerified, // This should come from the database
+          subscription: user.subscription
             ? {
-                plan: typedUser.subscription.plan,
-                status: "active", // Replace with actual status if available
-                currentPeriodEnd: undefined, // Replace with actual value if available
+                plan: user.subscription.plan,
+                status: "active",
+                currentPeriodEnd: undefined,
               }
             : undefined,
         }
@@ -99,6 +87,10 @@ export const authOptions: NextAuthOptions = {
         }
         if (session.isVerified !== undefined) {
           token.isVerified = session.isVerified
+        }
+        // Add name updates for profile changes
+        if (session.name !== undefined) {
+          token.name = session.name
         }
       }
 

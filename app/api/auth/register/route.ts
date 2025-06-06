@@ -27,13 +27,20 @@ export async function POST(req: NextRequest) {
     // Generate verification token
     const verificationToken = randomBytes(32).toString("hex")
 
-    // Create user
+    console.log("Creating user with verification settings:", {
+      email,
+      isVerified: false,
+      hasVerificationToken: !!verificationToken
+    })
+
+    // Create user with explicit verification settings
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        isVerified: false,
+        isVerified: false, // Explicitly set to false
+        hasAcceptedTerms: false, // Also ensure terms are not accepted yet
         verificationToken,
         subscription: {
           create: {
@@ -43,20 +50,28 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    console.log("User created with verification status:", {
+      id: user.id,
+      email: user.email,
+      isVerified: user.isVerified,
+      hasAcceptedTerms: user.hasAcceptedTerms
+    })
+
     // Try to send verification email, but don't fail registration if it fails
     try {
       await sendVerificationEmail(email, verificationToken)
+      console.log("Verification email sent successfully to:", email)
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError)
       // Continue with registration process despite email failure
     }
 
-    // Return user without password
-    const { password: _, verificationToken: __, ...userWithoutPassword } = user
+    // Return user without password and verification token
+    const { password: _, verificationToken: __, ...userWithoutSensitiveData } = user
 
     return NextResponse.json(
       {
-        user: userWithoutPassword,
+        user: userWithoutSensitiveData,
         message: "User registered successfully. Please check your email to verify your account.",
       },
       { status: 201 },
