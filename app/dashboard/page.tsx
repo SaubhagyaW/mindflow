@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -59,8 +59,9 @@ type SubscriptionData = {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("conversations")
@@ -78,6 +79,49 @@ export default function DashboardPage() {
 
   // Check if user is on free plan or paid plan based on fetched subscription
   const isPaidUser = userSubscription && userSubscription.plan !== "free"
+
+  // Handle verification success and session refresh
+  useEffect(() => {
+    const verified = searchParams.get('verified')
+    const shouldRefresh = searchParams.get('refresh')
+
+    if (verified === 'success') {
+      console.log("Email verification successful, updating session...")
+
+      // Show success toast
+      toast({
+        title: "Email Verified!",
+        description: "Your email has been successfully verified.",
+      })
+
+      // Force session refresh to update verification status
+      if (shouldRefresh === 'true') {
+        console.log("Forcing session refresh...")
+        update({ isVerified: true }).then(() => {
+          console.log("Session updated with verification status")
+          // Clean up URL parameters
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('verified')
+          newUrl.searchParams.delete('refresh')
+          window.history.replaceState({}, '', newUrl.toString())
+        }).catch(err => {
+          console.error("Error updating session:", err)
+        })
+      }
+    } else if (verified === 'already') {
+      toast({
+        title: "Already Verified",
+        description: "Your email was already verified.",
+      })
+
+      // Still refresh session to ensure consistency
+      update({ isVerified: true }).then(() => {
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.delete('verified')
+        window.history.replaceState({}, '', newUrl.toString())
+      })
+    }
+  }, [searchParams, toast, update])
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
