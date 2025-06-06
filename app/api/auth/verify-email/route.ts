@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
     const user = await prisma.user.findFirst({
       where: {
         verificationToken: token,
-        isVerified: false, // Only update if not already verified
       },
     })
 
@@ -34,19 +33,17 @@ export async function GET(req: NextRequest) {
 
       if (verifiedUser) {
         console.log("User is already verified")
-        // Redirect to a success page with a message
-        return NextResponse.redirect(new URL('/dashboard?verified=already', req.url))
+        return NextResponse.json({ message: "Email already verified" })
       }
 
-      console.error("Verification failed: Invalid or expired token")
-      // Redirect to an error page
-      return NextResponse.redirect(new URL('/verify-email?error=invalid_token', req.url))
+      console.error("Verification failed: Invalid token")
+      return NextResponse.json({ error: "Invalid verification token" }, { status: 400 })
     }
 
     console.log("User found, updating verification status for user:", user.id)
 
     // Update user to mark as verified and remove the token
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: {
         id: user.id,
       },
@@ -57,12 +54,9 @@ export async function GET(req: NextRequest) {
     })
 
     console.log("Email verification successful for user:", user.id)
-
-    // Redirect to success page
-    return NextResponse.redirect(new URL('/dashboard?verified=success', req.url))
-
+    return NextResponse.json({ message: "Email verified successfully" })
   } catch (error) {
     console.error("Email verification error:", error)
-    return NextResponse.redirect(new URL('/verify-email?error=server_error', req.url))
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
