@@ -1,85 +1,69 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Mail, AlertCircle, Loader2, CheckCircle, RefreshCw } from "lucide-react"
+import { Mail, Loader2, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function EmailVerificationBanner() {
   const { data: session, update } = useSession()
   const { toast } = useToast()
   const [isResending, setIsResending] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
-  const [isCheckingStatus, setIsCheckingStatus] = useState(false)
-  const [hasCheckedStatus, setHasCheckedStatus] = useState(false)
-  const checkInProgress = useRef(false)
+  const [isDismissed, setIsDismissed] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Only check verification status once when component mounts
+  // Check verification status from the database
   useEffect(() => {
-    if (session?.user?.email && !hasCheckedStatus && !checkInProgress.current) {
-      checkInProgress.current = true
-      checkVerificationStatus()
-    }
-  }, [session?.user?.email, hasCheckedStatus])
-
-  const checkVerificationStatus = async () => {
-    if (!session?.user?.email || isCheckingStatus) return
-
-    setIsCheckingStatus(true)
-    try {
-      console.log("Checking verification status for:", session.user.email)
-
-      const response = await fetch("/api/user/verification-status", {
-        method: "GET",
-        cache: "no-store"
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log("Verification status response:", data)
-
-        // Only update session if there's actually a mismatch and user is verified in DB
-        if (data.isVerified && !session.user.isVerified) {
-          console.log("User is verified in DB but not in session - updating session")
-          await update({ isVerified: true })
-
-          toast({
-            title: "Email verified",
-            description: "Your email verification status has been updated.",
-            duration: 3000,
-          })
-        }
+    const checkVerificationStatus = async () => {
+      if (!session?.user?.id) {
+        setIsLoading(false)
+        return
       }
-    } catch (error) {
-      console.error("Error checking verification status:", error)
-    } finally {
-      setIsCheckingStatus(false)
-      setHasCheckedStatus(true)
-      checkInProgress.current = false
+
+      try {
+        console.log("Checking verification status for user:", session.user.id)
+        const response = await fetch("/api/user/profile", {
+          cache: "no-store",
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log("Profile data received:", data)
+
+          if (data.user && data.user.isVerified) {
+            console.log("User is verified according to database")
+            setIsVerified(true)
+            // Update session to reflect verified status
+            await update({ isVerified: true })
+          } else {
+            console.log("User is not verified according to database")
+            setIsVerified(false)
+          }
+        }
+      } catch (error) {
+        console.error("Error checking verification status:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }
 
-  const handleManualRefresh = async () => {
-    setHasCheckedStatus(false)
-    await checkVerificationStatus()
-  }
+    checkVerificationStatus()
+  }, [session, update])
 
-  // Don't show banner if user is verified OR if we're still checking
-  if (!session?.user || session.user.isVerified || isCheckingStatus) {
+  // Only show for unverified users
+  if (isLoading || !session?.user || isVerified || session.user.isVerified || isDismissed) {
     return null
   }
 
+  console.log("Rendering verification banner, verified status:", isVerified)
+
   const handleResendVerification = async () => {
-    if (isResending) return
-
     setIsResending(true)
-    setEmailSent(false)
-
     try {
-      console.log("Attempting to resend verification email for:", session.user?.email)
-
+      console.log("Resending verification email to:", session.user.email)
       const response = await fetch("/api/auth/resend-verification", {
         method: "POST",
         headers: {
@@ -88,45 +72,24 @@ export function EmailVerificationBanner() {
         body: JSON.stringify({
           email: session.user.email,
         }),
-        cache: "no-store"
       })
 
       const data = await response.json()
-      console.log("Resend verification response:", data)
 
-      if (response.ok) {
-        if (data.isVerified && data.shouldUpdateSession) {
-          // User is already verified, update session
-          console.log("User already verified, updating session...")
-          await update({ isVerified: true })
-
-          toast({
-            title: "Email already verified",
-            description: "Your email was already verified. Welcome!",
-          })
-        } else {
-          // Email sent successfully
-          setEmailSent(true)
-          toast({
-            title: "Verification email sent",
-            description: "Please check your email inbox and spam folder for the verification link.",
-            duration: 5000,
-          })
-        }
-      } else {
-        throw new Error(data.error || `HTTP ${response.status}`)
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend verification email")
       }
 
+      toast({
+        title: "Verification email sent",
+        description: "Please check your inbox and click the verification link.",
+      })
     } catch (error) {
       console.error("Error resending verification email:", error)
-
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
-
       toast({
-        title: "Failed to send email",
-        description: `Error: ${errorMessage}. Please try again or contact support.`,
+        title: "Failed to resend verification email",
+        description: "Please try again later or contact support.",
         variant: "destructive",
-        duration: 7000,
       })
     } finally {
       setIsResending(false)
@@ -134,56 +97,46 @@ export function EmailVerificationBanner() {
   }
 
   return (
-      <Alert className="border-yellow-200 bg-yellow-50">
-        <AlertCircle className="h-4 w-4 text-yellow-600" />
-        <AlertDescription className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2 flex-1">
-            <Mail className="h-4 w-4 text-yellow-600" />
-            <span className="text-yellow-800">
-            {emailSent
-                ? "Verification email sent! Please check your inbox and spam folder."
-                : "Please verify your email address to access all features."
-            }
-          </span>
+    <Alert className="bg-blue-50 border-blue-200 mb-6">
+      <div className="flex items-start justify-between w-full">
+        <div className="flex">
+          <Mail className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
+          <div>
+            <AlertTitle className="text-blue-800 font-bold">Verify your email address</AlertTitle>
+            <AlertDescription className="text-blue-700">
+              Please verify your email address to access all features.
+              {session.user.subscription?.plan !== "free" && " Email verification is required for paid features."}
+            </AlertDescription>
           </div>
-          <div className="flex items-center gap-2 ml-4">
-            {emailSent && (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleResendVerification}
+            disabled={isResending}
+            className="border-blue-300 text-blue-700 hover:bg-blue-100"
+          >
+            {isResending ? (
+              <>
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Resend Email"
             )}
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={handleManualRefresh}
-                disabled={isCheckingStatus}
-                className="border-blue-300 text-blue-700 hover:bg-blue-100 mr-2"
-                title="Check if email is already verified"
-            >
-              {isCheckingStatus ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                  <RefreshCw className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={handleResendVerification}
-                disabled={isResending}
-                className="border-yellow-300 text-yellow-700 hover:bg-yellow-100 whitespace-nowrap"
-            >
-              {isResending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-              ) : emailSent ? (
-                  "Send Again"
-              ) : (
-                  "Resend Email"
-              )}
-            </Button>
-          </div>
-        </AlertDescription>
-      </Alert>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsDismissed(true)}
+            className="text-blue-700 hover:bg-blue-100 h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Dismiss</span>
+          </Button>
+        </div>
+      </div>
+    </Alert>
   )
 }

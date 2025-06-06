@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic" // Ensure this route is not cached
 export async function GET(req: NextRequest) {
   try {
     const token = req.nextUrl.searchParams.get("token")
-    console.log("Email verification attempt with token:", token?.substring(0, 8) + "...")
+    console.log("Received verification request with token:", token)
 
     if (!token) {
-      console.error("No verification token provided")
+      console.error("Verification failed: No token provided")
       return NextResponse.json({ error: "Verification token is required" }, { status: 400 })
     }
 
@@ -21,27 +21,29 @@ export async function GET(req: NextRequest) {
     })
 
     if (!user) {
-      console.log("No user found with verification token")
+      console.log("Checking if user is already verified...")
 
-      // Check if user might already be verified
-      const allUsers = await prisma.user.findMany({
-        where: { isVerified: true },
-        select: { id: true, email: true }
+      // Check if token might be expired but user is already verified
+      const verifiedUser = await prisma.user.findFirst({
+        where: {
+          isVerified: true,
+          verificationToken: null,
+        },
       })
-      console.log("Verified users count:", allUsers.length)
 
-      return NextResponse.json({ error: "Invalid or expired verification token" }, { status: 400 })
-    }
-
-    if (user.isVerified) {
-      console.log("User already verified:", user.email)
+      if (verifiedUser) {
+        console.log("User is already verified")
         return NextResponse.json({ message: "Email already verified" })
       }
 
-    console.log("Verifying user:", user.email)
+      console.error("Verification failed: Invalid token")
+      return NextResponse.json({ error: "Invalid verification token" }, { status: 400 })
+    }
+
+    console.log("User found, updating verification status for user:", user.id)
 
     // Update user to mark as verified and remove the token
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: {
         id: user.id,
       },
@@ -51,21 +53,10 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    console.log("User verification successful:", updatedUser.email, "isVerified:", updatedUser.isVerified)
-
-    return NextResponse.json({
-      message: "Email verified successfully",
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        isVerified: updatedUser.isVerified
-      }
-    })
+    console.log("Email verification successful for user:", user.id)
+    return NextResponse.json({ message: "Email verified successfully" })
   } catch (error) {
     console.error("Email verification error:", error)
-    return NextResponse.json({
-      error: "Something went wrong during verification",
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
