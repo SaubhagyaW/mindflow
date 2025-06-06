@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -13,20 +13,23 @@ export function EmailVerificationBanner() {
   const [isResending, setIsResending] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [isCheckingStatus, setIsCheckingStatus] = useState(false)
+  const [hasCheckedStatus, setHasCheckedStatus] = useState(false)
+  const checkInProgress = useRef(false)
 
-  // Check actual verification status on component mount
+  // Only check verification status once when component mounts
   useEffect(() => {
-    if (session?.user?.email) {
+    if (session?.user?.email && !hasCheckedStatus && !checkInProgress.current) {
+      checkInProgress.current = true
       checkVerificationStatus()
     }
-  }, [session?.user?.email])
+  }, [session?.user?.email, hasCheckedStatus])
 
   const checkVerificationStatus = async () => {
-    if (!session?.user?.email) return
+    if (!session?.user?.email || isCheckingStatus) return
 
     setIsCheckingStatus(true)
     try {
-      console.log("Checking actual verification status for:", session.user.email)
+      console.log("Checking verification status for:", session.user.email)
 
       const response = await fetch("/api/user/verification-status", {
         method: "GET",
@@ -37,13 +40,15 @@ export function EmailVerificationBanner() {
         const data = await response.json()
         console.log("Verification status response:", data)
 
+        // Only update session if there's actually a mismatch and user is verified in DB
         if (data.isVerified && !session.user.isVerified) {
           console.log("User is verified in DB but not in session - updating session")
           await update({ isVerified: true })
 
           toast({
             title: "Email verified",
-            description: "Your email has been verified successfully!",
+            description: "Your email verification status has been updated.",
+            duration: 3000,
           })
         }
       }
@@ -51,11 +56,18 @@ export function EmailVerificationBanner() {
       console.error("Error checking verification status:", error)
     } finally {
       setIsCheckingStatus(false)
+      setHasCheckedStatus(true)
+      checkInProgress.current = false
     }
   }
 
-  // Don't show banner if user is verified
-  if (!session?.user || session.user.isVerified) {
+  const handleManualRefresh = async () => {
+    setHasCheckedStatus(false)
+    await checkVerificationStatus()
+  }
+
+  // Don't show banner if user is verified OR if we're still checking
+  if (!session?.user || session.user.isVerified || isCheckingStatus) {
     return null
   }
 
@@ -141,7 +153,7 @@ export function EmailVerificationBanner() {
             <Button
                 variant="outline"
                 size="sm"
-                onClick={checkVerificationStatus}
+                onClick={handleManualRefresh}
                 disabled={isCheckingStatus}
                 className="border-blue-300 text-blue-700 hover:bg-blue-100 mr-2"
                 title="Check if email is already verified"

@@ -28,17 +28,23 @@ export async function GET() {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
+        const dbIsVerified = Boolean(user.isVerified)
+        const sessionIsVerified = Boolean(session.user.isVerified)
+
         console.log("Verification status check:", {
             email: user.email,
-            dbIsVerified: user.isVerified,
-            sessionIsVerified: session.user.isVerified,
-            hasToken: !!user.verificationToken
+            dbIsVerified,
+            sessionIsVerified,
+            hasToken: !!user.verificationToken,
+            mismatch: dbIsVerified !== sessionIsVerified
         })
 
         return NextResponse.json({
-            isVerified: user.isVerified,
+            isVerified: dbIsVerified,
             hasVerificationToken: !!user.verificationToken,
-            sessionMatch: user.isVerified === session.user.isVerified
+            sessionMatch: dbIsVerified === sessionIsVerified,
+            sessionIsVerified,
+            dbIsVerified
         })
 
     } catch (error) {

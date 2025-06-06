@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     console.log("Target email for verification:", targetEmail)
 
-    // IMPORTANT: Query the database directly to get the real verification status
+    // Get the ACTUAL verification status from database (not session)
     const user = await prisma.user.findUnique({
       where: { email: targetEmail },
       select: {
@@ -50,22 +50,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // Log the ACTUAL database state vs session state
+    // Convert to boolean to ensure proper comparison
+    const isVerifiedInDB = Boolean(user.isVerified)
+
     console.log("=== VERIFICATION STATUS COMPARISON ===")
-    console.log("Database isVerified:", user.isVerified)
-    console.log("Session isVerified:", session?.user?.isVerified)
+    console.log("Database isVerified:", isVerifiedInDB)
+    console.log("Session isVerified:", Boolean(session?.user?.isVerified))
     console.log("Current verification token exists:", !!user.verificationToken)
 
-    // Check the ACTUAL database verification status (not session)
-    if (user.isVerified) {
-      console.log("User is actually verified in database - updating session")
+    // Check the ACTUAL database verification status
+    if (isVerifiedInDB) {
+      console.log("User is actually verified in database")
 
-      // The user is verified in DB but session is out of sync
-      // Return success and let the frontend handle session update
+      // Clear any remaining verification token
+      if (user.verificationToken) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { verificationToken: null }
+        })
+        console.log("Cleared verification token for already verified user")
+      }
+
       return NextResponse.json({
         message: "Email already verified",
         isVerified: true,
-        shouldUpdateSession: true // Flag to update session
+        shouldUpdateSession: !Boolean(session?.user?.isVerified) // Only update if session is wrong
       })
     }
 
@@ -76,10 +85,9 @@ export async function POST(req: NextRequest) {
     console.log("Generated new verification token:", verificationToken.substring(0, 8) + "...")
 
     // Update the user with the new token
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: user.id },
-      data: { verificationToken },
-      select: { id: true, email: true, verificationToken: true }
+      data: { verificationToken }
     })
 
     console.log("Updated user with new token")
